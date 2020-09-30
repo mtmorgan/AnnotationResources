@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 3 Gene symbol mapping | Bioconductor Annotation Resources</title>
+  <meta name="description" content="This is a brief introduction to Bioconductor annotation resources, prepared for an R-Ladies session in Tunisia, September 30, 2020." />
+  <meta name="generator" content="bookdown 0.20 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 3 Gene symbol mapping | Bioconductor Annotation Resources" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="This is a brief introduction to Bioconductor annotation resources, prepared for an R-Ladies session in Tunisia, September 30, 2020." />
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 3 Gene symbol mapping | Bioconductor Annotation Resources" />
+  
+  <meta name="twitter:description" content="This is a brief introduction to Bioconductor annotation resources, prepared for an R-Ladies session in Tunisia, September 30, 2020." />
+  
+
+<meta name="author" content="Martni Morgan" />
+
+
+<meta name="date" content="2020-09-30" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="BulkRNASeq.html"/>
+<link rel="next" href="discovering-genomic-coordinates.html"/>
+<script src="libs/header-attrs-2.3/header-attrs.js"></script>
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Bioconductor Annotation Resources</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Prerequisites</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#plan"><i class="fa fa-check"></i><b>1.1</b> Plan</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#bioconductor"><i class="fa fa-check"></i><b>1.2</b> <em>Bioconductor</em></a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="BulkRNASeq.html"><a href="BulkRNASeq.html"><i class="fa fa-check"></i><b>2</b> Bulk RNA Sequencing</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="BulkRNASeq.html"><a href="BulkRNASeq.html#rna-seq-differential-expression-data-in-r-bioconductor"><i class="fa fa-check"></i><b>2.1</b> RNA-seq differential expression data in <em>R</em> / <em>Bioconductor</em></a></li>
+<li class="chapter" data-level="2.2" data-path="BulkRNASeq.html"><a href="BulkRNASeq.html#a-quick-analysis"><i class="fa fa-check"></i><b>2.2</b> A quick analysis</a></li>
+<li class="chapter" data-level="2.3" data-path="BulkRNASeq.html"><a href="BulkRNASeq.html#saving-and-session-information"><i class="fa fa-check"></i><b>2.3</b> Saving and session information</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="gene-symbol-mapping.html"><a href="gene-symbol-mapping.html"><i class="fa fa-check"></i><b>3</b> Gene symbol mapping</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="gene-symbol-mapping.html"><a href="gene-symbol-mapping.html#what-do-we-want-to-do"><i class="fa fa-check"></i><b>3.1</b> What do we want to do?</a></li>
+<li class="chapter" data-level="3.2" data-path="gene-symbol-mapping.html"><a href="gene-symbol-mapping.html#finding-annotation-resources"><i class="fa fa-check"></i><b>3.2</b> Finding annotation resources</a></li>
+<li class="chapter" data-level="3.3" data-path="gene-symbol-mapping.html"><a href="gene-symbol-mapping.html#mapping-between-identiifiers"><i class="fa fa-check"></i><b>3.3</b> Mapping between identiifiers</a></li>
+<li class="chapter" data-level="3.4" data-path="BulkRNASeq.html"><a href="BulkRNASeq.html#saving-and-session-information"><i class="fa fa-check"></i><b>3.4</b> Saving and session information</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="discovering-genomic-coordinates.html"><a href="discovering-genomic-coordinates.html"><i class="fa fa-check"></i><b>4</b> Discovering genomic coordinates</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="gene-symbol-mapping.html"><a href="gene-symbol-mapping.html#what-do-we-want-to-do"><i class="fa fa-check"></i><b>4.1</b> What do we want to do?</a></li>
+<li class="chapter" data-level="4.2" data-path="discovering-genomic-coordinates.html"><a href="discovering-genomic-coordinates.html#genomic-ranges"><i class="fa fa-check"></i><b>4.2</b> Genomic ranges</a></li>
+<li class="chapter" data-level="4.3" data-path="discovering-genomic-coordinates.html"><a href="discovering-genomic-coordinates.html#mapping-from-identifiers-to-ranges"><i class="fa fa-check"></i><b>4.3</b> Mapping from identifiers to ranges</a></li>
+<li class="chapter" data-level="4.4" data-path="discovering-genomic-coordinates.html"><a href="discovering-genomic-coordinates.html#flexible-queries-on-ensdb-objects"><i class="fa fa-check"></i><b>4.4</b> Flexible queries on EnsDb objects</a></li>
+<li class="chapter" data-level="4.5" data-path="BulkRNASeq.html"><a href="BulkRNASeq.html#saving-and-session-information"><i class="fa fa-check"></i><b>4.5</b> Saving and session information</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="gene-sets.html"><a href="gene-sets.html"><i class="fa fa-check"></i><b>5</b> Gene sets</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="gene-symbol-mapping.html"><a href="gene-symbol-mapping.html#what-do-we-want-to-do"><i class="fa fa-check"></i><b>5.1</b> What do we want to do?</a></li>
+<li class="chapter" data-level="5.2" data-path="gene-sets.html"><a href="gene-sets.html#mapping-from-entrez-gene-identiifiers-to-go-identifiers"><i class="fa fa-check"></i><b>5.2</b> Mapping from (entrez) gene identiifiers to GO identifiers</a></li>
+<li class="chapter" data-level="5.3" data-path="gene-sets.html"><a href="gene-sets.html#using-go-gene-ontology-annotations-to-group-genes-by-biological-process"><i class="fa fa-check"></i><b>5.3</b> Using GO (gene ontology) annotations to group genes by biological process</a></li>
+<li class="chapter" data-level="5.4" data-path="gene-sets.html"><a href="gene-sets.html#more-flexible-gene-set-annotation-using-biocset"><i class="fa fa-check"></i><b>5.4</b> More flexible gene set annotation using <span>BiocSet</span></a></li>
+<li class="chapter" data-level="5.5" data-path="BulkRNASeq.html"><a href="BulkRNASeq.html#saving-and-session-information"><i class="fa fa-check"></i><b>5.5</b> Saving and session information</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Bioconductor Annotation Resources</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="gene-symbol-mapping" class="section level1" number="3">
+<h1><span class="header-section-number">Chapter 3</span> Gene symbol mapping</h1>
+<div id="what-do-we-want-to-do" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> What do we want to do?</h2>
+<p>Start by loading the updated ‘airway’ object from the previous chapter</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="gene-symbol-mapping.html#cb34-1" aria-hidden="true"></a>airway &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;airway_with_results.Rda&quot;</span>)</span></code></pre></div>
+<p>Here is the row data</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="gene-symbol-mapping.html#cb35-1" aria-hidden="true"></a><span class="kw">rowData</span>(airway)</span></code></pre></div>
+<pre><code>## log2 fold change (MLE): dex trt vs untrt 
+## Wald test p-value: dex trt vs untrt 
+## DataFrame with 64102 rows and 6 columns
+##                  baseMean log2FoldChange     lfcSE      stat      pvalue
+##                 &lt;numeric&gt;      &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;   &lt;numeric&gt;
+## ENSG00000000003  708.6022     -0.3812539  0.100654 -3.787751 0.000152017
+## ENSG00000000005    0.0000             NA        NA        NA          NA
+## ENSG00000000419  520.2979      0.2068127  0.112219  1.842944 0.065337210
+## ENSG00000000457  237.1630      0.0379206  0.143445  0.264357 0.791504963
+## ENSG00000000460   57.9326     -0.0881677  0.287142 -0.307053 0.758803336
+## ...                   ...            ...       ...       ...         ...
+## LRG_94                  0             NA        NA        NA          NA
+## LRG_96                  0             NA        NA        NA          NA
+## LRG_97                  0             NA        NA        NA          NA
+## LRG_98                  0             NA        NA        NA          NA
+## LRG_99                  0             NA        NA        NA          NA
+##                       padj
+##                  &lt;numeric&gt;
+## ENSG00000000003 0.00128364
+## ENSG00000000005         NA
+## ENSG00000000419 0.19654584
+## ENSG00000000457 0.91145800
+## ENSG00000000460 0.89503445
+## ...                    ...
+## LRG_94                  NA
+## LRG_96                  NA
+## LRG_97                  NA
+## LRG_98                  NA
+## LRG_99                  NA</code></pre>
+<p>It’s easy to find the ‘most differentially expressed’ (smallest adjusted P-value?) genes, e.g.,</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="gene-symbol-mapping.html#cb37-1" aria-hidden="true"></a>toptbl &lt;-</span>
+<span id="cb37-2"><a href="gene-symbol-mapping.html#cb37-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">rowData</span>(airway) <span class="op">%&gt;%</span></span>
+<span id="cb37-3"><a href="gene-symbol-mapping.html#cb37-3" aria-hidden="true"></a><span class="st">  </span><span class="kw">as_tibble</span>(<span class="dt">rownames =</span> <span class="st">&quot;Gene&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb37-4"><a href="gene-symbol-mapping.html#cb37-4" aria-hidden="true"></a><span class="st">  </span><span class="kw">arrange</span>(padj)</span>
+<span id="cb37-5"><a href="gene-symbol-mapping.html#cb37-5" aria-hidden="true"></a>toptbl</span></code></pre></div>
+<pre><code>## # A tibble: 64,102 x 7
+##    Gene            baseMean log2FoldChange  lfcSE  stat    pvalue      padj
+##    &lt;chr&gt;              &lt;dbl&gt;          &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+##  1 ENSG00000152583     997.           4.57 0.184   24.9 2.22e-136 4.01e-132
+##  2 ENSG00000165995     495.           3.29 0.133   24.7 7.84e-135 7.07e-131
+##  3 ENSG00000120129    3409.           2.95 0.121   24.3 3.67e-130 2.20e-126
+##  4 ENSG00000101347   12703.           3.77 0.155   24.2 9.58e-130 4.32e-126
+##  5 ENSG00000189221    2342.           3.35 0.142   23.7 1.10e-123 3.96e-120
+##  6 ENSG00000211445   12286.           3.73 0.166   22.5 4.62e-112 1.39e-108
+##  7 ENSG00000157214    3009.           1.98 0.0900  22.0 5.77e-107 1.49e-103
+##  8 ENSG00000162614    5393.           2.04 0.0942  21.6 1.32e-103 2.98e-100
+##  9 ENSG00000125148    3656.           2.21 0.106   20.9 2.90e- 97 5.81e- 94
+## 10 ENSG00000154734   30315.           2.35 0.116   20.3 3.26e- 91 5.88e- 88
+## # … with 64,092 more rows</code></pre>
+<p>But what exactly does “ENSG00000152583” do? Can we map this identifier to a
+more familiar representation, perhaps find out some basic information about
+what it does?</p>
+</div>
+<div id="finding-annotation-resources" class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> Finding annotation resources</h2>
+<p>From the airway [vignette][airway-vignette], the experiment used Ensembl
+reference annotations from Ensembl release 75. This is available as a
+<em>Bioconductor</em> package</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="gene-symbol-mapping.html#cb39-1" aria-hidden="true"></a>BiocManager<span class="op">::</span><span class="kw">available</span>(<span class="st">&quot;EnsDb&quot;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;AHEnsDbs&quot;              &quot;EnsDb.Hsapiens.v75&quot;    &quot;EnsDb.Hsapiens.v79&quot;   
+## [4] &quot;EnsDb.Hsapiens.v86&quot;    &quot;EnsDb.Mmusculus.v75&quot;   &quot;EnsDb.Mmusculus.v79&quot;  
+## [7] &quot;EnsDb.Rnorvegicus.v75&quot; &quot;EnsDb.Rnorvegicus.v79&quot;</code></pre>
+<p>so we load that package (it may be necessary to install the package using
+[BiocManager][], as outlined previously)</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="gene-symbol-mapping.html#cb41-1" aria-hidden="true"></a><span class="kw">library</span>(EnsDb.Hsapiens.v75)</span></code></pre></div>
+<p>The central object in this package is the same as the package name</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="gene-symbol-mapping.html#cb42-1" aria-hidden="true"></a>EnsDb.Hsapiens.v75</span></code></pre></div>
+<pre><code>## EnsDb for Ensembl:
+## |Backend: SQLite
+## |Db type: EnsDb
+## |Type of Gene ID: Ensembl Gene ID
+## |Supporting package: ensembldb
+## |Db created by: ensembldb package from Bioconductor
+## |script_version: 0.3.0
+## |Creation time: Thu May 18 09:15:45 2017
+## |ensembl_version: 75
+## |ensembl_host: localhost
+## |Organism: homo_sapiens
+## |taxonomy_id: 9606
+## |genome_build: GRCh37
+## |DBSCHEMAVERSION: 2.0
+## | No. of genes: 64102.
+## | No. of transcripts: 215647.
+## |Protein data available.</code></pre>
+<p>This object represents a connection to a database of gene symbol mapping.</p>
+<p>Many other genomes (and other annotation resources) are available in the
+AnnotationHub</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="gene-symbol-mapping.html#cb44-1" aria-hidden="true"></a><span class="kw">library</span>(AnnotationHub)</span>
+<span id="cb44-2"><a href="gene-symbol-mapping.html#cb44-2" aria-hidden="true"></a><span class="kw">library</span>(ensembldb)</span>
+<span id="cb44-3"><a href="gene-symbol-mapping.html#cb44-3" aria-hidden="true"></a>hub &lt;-<span class="st"> </span><span class="kw">AnnotationHub</span>()</span>
+<span id="cb44-4"><a href="gene-symbol-mapping.html#cb44-4" aria-hidden="true"></a>hub</span></code></pre></div>
+<pre><code>## AnnotationHub with 50520 records
+## # snapshotDate(): 2020-04-27
+## # $dataprovider: BroadInstitute, Ensembl, UCSC, ftp://ftp.ncbi.nlm.nih.gov/g...
+## # $species: Homo sapiens, Mus musculus, Drosophila melanogaster, Bos taurus,...
+## # $rdataclass: GRanges, BigWigFile, TwoBitFile, Rle, EnsDb, OrgDb, ChainFile...
+## # additional mcols(): taxonomyid, genome, description,
+## #   coordinate_1_based, maintainer, rdatadateadded, preparerclass, tags,
+## #   rdatapath, sourceurl, sourcetype 
+## # retrieve records with, e.g., &#39;object[[&quot;AH5012&quot;]]&#39; 
+## 
+##             title                                       
+##   AH5012  | Chromosome Band                             
+##   AH5013  | STS Markers                                 
+##   AH5014  | FISH Clones                                 
+##   AH5015  | Recomb Rate                                 
+##   AH5016  | ENCODE Pilot                                
+##   ...       ...                                         
+##   AH83357 | Ensembl 101 EnsDb for Xiphophorus couchianus
+##   AH83358 | Ensembl 101 EnsDb for Xiphophorus maculatus 
+##   AH83359 | Ensembl 101 EnsDb for Xenopus tropicalis    
+##   AH83360 | Ensembl 101 EnsDb for Zonotrichia albicollis
+##   AH83361 | Ensembl 101 EnsDb for Zalophus californianus</code></pre>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="gene-symbol-mapping.html#cb46-1" aria-hidden="true"></a><span class="kw">query</span>(hub, <span class="kw">c</span>(<span class="st">&quot;EnsDb&quot;</span>, <span class="st">&quot;Homo sapiens&quot;</span>))</span></code></pre></div>
+<pre><code>## AnnotationHub with 16 records
+## # snapshotDate(): 2020-04-27
+## # $dataprovider: Ensembl
+## # $species: Homo sapiens
+## # $rdataclass: EnsDb
+## # additional mcols(): taxonomyid, genome, description,
+## #   coordinate_1_based, maintainer, rdatadateadded, preparerclass, tags,
+## #   rdatapath, sourceurl, sourcetype 
+## # retrieve records with, e.g., &#39;object[[&quot;AH53211&quot;]]&#39; 
+## 
+##             title                             
+##   AH53211 | Ensembl 87 EnsDb for Homo Sapiens 
+##   AH53715 | Ensembl 88 EnsDb for Homo Sapiens 
+##   AH56681 | Ensembl 89 EnsDb for Homo Sapiens 
+##   AH57757 | Ensembl 90 EnsDb for Homo Sapiens 
+##   AH60773 | Ensembl 91 EnsDb for Homo Sapiens 
+##   ...       ...                               
+##   AH73986 | Ensembl 79 EnsDb for Homo sapiens 
+##   AH75011 | Ensembl 98 EnsDb for Homo sapiens 
+##   AH78783 | Ensembl 99 EnsDb for Homo sapiens 
+##   AH79689 | Ensembl 100 EnsDb for Homo sapiens
+##   AH83216 | Ensembl 101 EnsDb for Homo sapiens</code></pre>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="gene-symbol-mapping.html#cb48-1" aria-hidden="true"></a>ens101 &lt;-<span class="st"> </span>hub[[<span class="st">&quot;AH83216&quot;</span>]]</span>
+<span id="cb48-2"><a href="gene-symbol-mapping.html#cb48-2" aria-hidden="true"></a>ens101</span></code></pre></div>
+<pre><code>## EnsDb for Ensembl:
+## |Backend: SQLite
+## |Db type: EnsDb
+## |Type of Gene ID: Ensembl Gene ID
+## |Supporting package: ensembldb
+## |Db created by: ensembldb package from Bioconductor
+## |script_version: 0.3.5
+## |Creation time: Fri Aug 21 21:07:29 2020
+## |ensembl_version: 101
+## |ensembl_host: localhost
+## |Organism: Homo sapiens
+## |taxonomy_id: 9606
+## |genome_build: GRCh38
+## |DBSCHEMAVERSION: 2.1
+## | No. of genes: 67990.
+## | No. of transcripts: 252335.
+## |Protein data available.</code></pre>
+</div>
+<div id="mapping-between-identiifiers" class="section level2" number="3.3">
+<h2><span class="header-section-number">3.3</span> Mapping between identiifiers</h2>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="gene-symbol-mapping.html#cb50-1" aria-hidden="true"></a><span class="kw">keytypes</span>(EnsDb.Hsapiens.v75)</span></code></pre></div>
+<pre><code>##  [1] &quot;ENTREZID&quot;            &quot;EXONID&quot;              &quot;GENEBIOTYPE&quot;        
+##  [4] &quot;GENEID&quot;              &quot;GENENAME&quot;            &quot;PROTDOMID&quot;          
+##  [7] &quot;PROTEINDOMAINID&quot;     &quot;PROTEINDOMAINSOURCE&quot; &quot;PROTEINID&quot;          
+## [10] &quot;SEQNAME&quot;             &quot;SEQSTRAND&quot;           &quot;SYMBOL&quot;             
+## [13] &quot;TXBIOTYPE&quot;           &quot;TXID&quot;                &quot;TXNAME&quot;             
+## [16] &quot;UNIPROTID&quot;</code></pre>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="gene-symbol-mapping.html#cb52-1" aria-hidden="true"></a><span class="kw">head</span>(<span class="kw">keys</span>(EnsDb.Hsapiens.v75, <span class="st">&quot;GENEID&quot;</span>))</span></code></pre></div>
+<pre><code>## [1] &quot;ENSG00000000003&quot; &quot;ENSG00000000005&quot; &quot;ENSG00000000419&quot; &quot;ENSG00000000457&quot;
+## [5] &quot;ENSG00000000460&quot; &quot;ENSG00000000938&quot;</code></pre>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="gene-symbol-mapping.html#cb54-1" aria-hidden="true"></a><span class="kw">columns</span>(EnsDb.Hsapiens.v75)</span></code></pre></div>
+<pre><code>##  [1] &quot;ENTREZID&quot;            &quot;EXONID&quot;              &quot;EXONIDX&quot;            
+##  [4] &quot;EXONSEQEND&quot;          &quot;EXONSEQSTART&quot;        &quot;GENEBIOTYPE&quot;        
+##  [7] &quot;GENEID&quot;              &quot;GENENAME&quot;            &quot;GENESEQEND&quot;         
+## [10] &quot;GENESEQSTART&quot;        &quot;INTERPROACCESSION&quot;   &quot;ISCIRCULAR&quot;         
+## [13] &quot;PROTDOMEND&quot;          &quot;PROTDOMSTART&quot;        &quot;PROTEINDOMAINID&quot;    
+## [16] &quot;PROTEINDOMAINSOURCE&quot; &quot;PROTEINID&quot;           &quot;PROTEINSEQUENCE&quot;    
+## [19] &quot;SEQCOORDSYSTEM&quot;      &quot;SEQLENGTH&quot;           &quot;SEQNAME&quot;            
+## [22] &quot;SEQSTRAND&quot;           &quot;SYMBOL&quot;              &quot;TXBIOTYPE&quot;          
+## [25] &quot;TXCDSSEQEND&quot;         &quot;TXCDSSEQSTART&quot;       &quot;TXID&quot;               
+## [28] &quot;TXNAME&quot;              &quot;TXSEQEND&quot;            &quot;TXSEQSTART&quot;         
+## [31] &quot;UNIPROTDB&quot;           &quot;UNIPROTID&quot;           &quot;UNIPROTMAPPINGTYPE&quot;</code></pre>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="gene-symbol-mapping.html#cb56-1" aria-hidden="true"></a><span class="kw">mapIds</span>(EnsDb.Hsapiens.v75, toptbl<span class="op">$</span>Gene, <span class="st">&quot;SYMBOL&quot;</span>, <span class="st">&quot;GENEID&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb56-2"><a href="gene-symbol-mapping.html#cb56-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">head</span>()</span></code></pre></div>
+<pre><code>## ENSG00000152583 ENSG00000165995 ENSG00000120129 ENSG00000101347 ENSG00000189221 
+##       &quot;SPARCL1&quot;        &quot;CACNB2&quot;         &quot;DUSP1&quot;        &quot;SAMHD1&quot;          &quot;MAOA&quot; 
+## ENSG00000211445 
+##          &quot;GPX3&quot;</code></pre>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="gene-symbol-mapping.html#cb58-1" aria-hidden="true"></a>toptbl <span class="op">%&gt;%</span></span>
+<span id="cb58-2"><a href="gene-symbol-mapping.html#cb58-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">mutate</span>(</span>
+<span id="cb58-3"><a href="gene-symbol-mapping.html#cb58-3" aria-hidden="true"></a>    <span class="dt">SYMBOL =</span> <span class="kw">mapIds</span>(<span class="dt">x =</span> EnsDb.Hsapiens.v75, Gene, <span class="st">&quot;SYMBOL&quot;</span>, <span class="st">&quot;GENEID&quot;</span>)</span>
+<span id="cb58-4"><a href="gene-symbol-mapping.html#cb58-4" aria-hidden="true"></a>  )</span></code></pre></div>
+<pre><code>## # A tibble: 64,102 x 8
+##    Gene          baseMean log2FoldChange  lfcSE  stat    pvalue      padj SYMBOL
+##    &lt;chr&gt;            &lt;dbl&gt;          &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt; 
+##  1 ENSG00000152…     997.           4.57 0.184   24.9 2.22e-136 4.01e-132 SPARC…
+##  2 ENSG00000165…     495.           3.29 0.133   24.7 7.84e-135 7.07e-131 CACNB2
+##  3 ENSG00000120…    3409.           2.95 0.121   24.3 3.67e-130 2.20e-126 DUSP1 
+##  4 ENSG00000101…   12703.           3.77 0.155   24.2 9.58e-130 4.32e-126 SAMHD1
+##  5 ENSG00000189…    2342.           3.35 0.142   23.7 1.10e-123 3.96e-120 MAOA  
+##  6 ENSG00000211…   12286.           3.73 0.166   22.5 4.62e-112 1.39e-108 GPX3  
+##  7 ENSG00000157…    3009.           1.98 0.0900  22.0 5.77e-107 1.49e-103 STEAP2
+##  8 ENSG00000162…    5393.           2.04 0.0942  21.6 1.32e-103 2.98e-100 NEXN  
+##  9 ENSG00000125…    3656.           2.21 0.106   20.9 2.90e- 97 5.81e- 94 MT2A  
+## 10 ENSG00000154…   30315.           2.35 0.116   20.3 3.26e- 91 5.88e- 88 ADAMT…
+## # … with 64,092 more rows</code></pre>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="gene-symbol-mapping.html#cb60-1" aria-hidden="true"></a><span class="kw">mapIds</span>(EnsDb.Hsapiens.v75, toptbl<span class="op">$</span>Gene, <span class="st">&quot;GENENAME&quot;</span>, <span class="st">&quot;GENEID&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb60-2"><a href="gene-symbol-mapping.html#cb60-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">head</span>()</span></code></pre></div>
+<pre><code>## ENSG00000152583 ENSG00000165995 ENSG00000120129 ENSG00000101347 ENSG00000189221 
+##       &quot;SPARCL1&quot;        &quot;CACNB2&quot;         &quot;DUSP1&quot;        &quot;SAMHD1&quot;          &quot;MAOA&quot; 
+## ENSG00000211445 
+##          &quot;GPX3&quot;</code></pre>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="gene-symbol-mapping.html#cb62-1" aria-hidden="true"></a>toptbl &lt;-<span class="st"> </span></span>
+<span id="cb62-2"><a href="gene-symbol-mapping.html#cb62-2" aria-hidden="true"></a><span class="st">  </span>toptbl <span class="op">%&gt;%</span></span>
+<span id="cb62-3"><a href="gene-symbol-mapping.html#cb62-3" aria-hidden="true"></a><span class="st">  </span><span class="kw">mutate</span>(</span>
+<span id="cb62-4"><a href="gene-symbol-mapping.html#cb62-4" aria-hidden="true"></a>    <span class="dt">SYMBOL =</span> <span class="kw">mapIds</span>(<span class="dt">x =</span> EnsDb.Hsapiens.v75, Gene, <span class="st">&quot;SYMBOL&quot;</span>, <span class="st">&quot;GENEID&quot;</span>),</span>
+<span id="cb62-5"><a href="gene-symbol-mapping.html#cb62-5" aria-hidden="true"></a>    <span class="dt">ENTREZID =</span> <span class="kw">mapIds</span>(<span class="dt">x =</span> EnsDb.Hsapiens.v75, Gene, <span class="st">&quot;ENTREZID&quot;</span>, <span class="st">&quot;GENEID&quot;</span>)</span>
+<span id="cb62-6"><a href="gene-symbol-mapping.html#cb62-6" aria-hidden="true"></a>  ) <span class="op">%&gt;%</span></span>
+<span id="cb62-7"><a href="gene-symbol-mapping.html#cb62-7" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(</span>
+<span id="cb62-8"><a href="gene-symbol-mapping.html#cb62-8" aria-hidden="true"></a>    <span class="st">&quot;Gene&quot;</span>, <span class="st">&quot;SYMBOL&quot;</span>, <span class="st">&quot;ENTREZID&quot;</span>,</span>
+<span id="cb62-9"><a href="gene-symbol-mapping.html#cb62-9" aria-hidden="true"></a>    <span class="kw">everything</span>()</span>
+<span id="cb62-10"><a href="gene-symbol-mapping.html#cb62-10" aria-hidden="true"></a>  )</span></code></pre></div>
+<pre><code>## Warning: Problem with `mutate()` input `ENTREZID`.
+## ℹ Unable to map 35866 of 64102 requested IDs.
+## ℹ Input `ENTREZID` is `mapIds(x = EnsDb.Hsapiens.v75, Gene, &quot;ENTREZID&quot;, &quot;GENEID&quot;)`.</code></pre>
+<pre><code>## Warning: Unable to map 35866 of 64102 requested IDs.</code></pre>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="gene-symbol-mapping.html#cb65-1" aria-hidden="true"></a>toptbl</span></code></pre></div>
+<pre><code>## # A tibble: 64,102 x 9
+##    Gene  SYMBOL ENTREZID baseMean log2FoldChange  lfcSE  stat    pvalue
+##    &lt;chr&gt; &lt;chr&gt;     &lt;int&gt;    &lt;dbl&gt;          &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
+##  1 ENSG… SPARC…     8404     997.           4.57 0.184   24.9 2.22e-136
+##  2 ENSG… CACNB2      783     495.           3.29 0.133   24.7 7.84e-135
+##  3 ENSG… DUSP1      1843    3409.           2.95 0.121   24.3 3.67e-130
+##  4 ENSG… SAMHD1    25939   12703.           3.77 0.155   24.2 9.58e-130
+##  5 ENSG… MAOA       4128    2342.           3.35 0.142   23.7 1.10e-123
+##  6 ENSG… GPX3       2878   12286.           3.73 0.166   22.5 4.62e-112
+##  7 ENSG… STEAP2   261729    3009.           1.98 0.0900  22.0 5.77e-107
+##  8 ENSG… NEXN      91624    5393.           2.04 0.0942  21.6 1.32e-103
+##  9 ENSG… MT2A       4502    3656.           2.21 0.106   20.9 2.90e- 97
+## 10 ENSG… ADAMT…     9510   30315.           2.35 0.116   20.3 3.26e- 91
+## # … with 64,092 more rows, and 1 more variable: padj &lt;dbl&gt;</code></pre>
+</div>
+<div id="saving-and-session-information" class="section level2" number="3.4">
+<h2><span class="header-section-number">3.4</span> Saving and session information</h2>
+<p>Let’s save the updated top table for future use</p>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="gene-symbol-mapping.html#cb67-1" aria-hidden="true"></a><span class="kw">saveRDS</span>(toptbl, <span class="st">&quot;toptbl.Rda&quot;</span>)</span></code></pre></div>
+<p>and record our session information for reproducibility</p>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb68-1"><a href="gene-symbol-mapping.html#cb68-1" aria-hidden="true"></a><span class="kw">sessionInfo</span>()</span></code></pre></div>
+<pre><code>## R version 4.0.2 Patched (2020-09-15 r79213)
+## Platform: x86_64-apple-darwin17.7.0 (64-bit)
+## Running under: macOS High Sierra 10.13.6
+## 
+## Matrix products: default
+## BLAS:   /Users/ma38727/bin/R-4-0-branch/lib/libRblas.dylib
+## LAPACK: /Users/ma38727/bin/R-4-0-branch/lib/libRlapack.dylib
+## 
+## locale:
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## attached base packages:
+## [1] stats4    parallel  stats     graphics  grDevices utils     datasets 
+## [8] methods   base     
+## 
+## other attached packages:
+##  [1] AnnotationHub_2.20.2        BiocFileCache_1.12.1       
+##  [3] dbplyr_1.4.4                DESeq2_1.28.1              
+##  [5] airway_1.8.0                SummarizedExperiment_1.18.2
+##  [7] DelayedArray_0.14.1         matrixStats_0.56.0         
+##  [9] org.Hs.eg.db_3.11.4         GO.db_3.11.4               
+## [11] dplyr_1.0.2                 EnsDb.Hsapiens.v75_2.99.0  
+## [13] ensembldb_2.12.1            AnnotationFilter_1.12.0    
+## [15] GenomicFeatures_1.40.1      AnnotationDbi_1.50.3       
+## [17] Biobase_2.48.0              GenomicRanges_1.40.0       
+## [19] GenomeInfoDb_1.24.2         IRanges_2.22.2             
+## [21] S4Vectors_0.26.1            BiocGenerics_0.34.0        
+## 
+## loaded via a namespace (and not attached):
+##  [1] ProtGenerics_1.20.0           bitops_1.0-6                 
+##  [3] bit64_4.0.5                   RColorBrewer_1.1-2           
+##  [5] progress_1.2.2                httr_1.4.2                   
+##  [7] tools_4.0.2                   utf8_1.1.4                   
+##  [9] R6_2.4.1                      DBI_1.1.0                    
+## [11] lazyeval_0.2.2                colorspace_1.4-1             
+## [13] tidyselect_1.1.0              prettyunits_1.1.1            
+## [15] bit_4.0.4                     curl_4.3                     
+## [17] compiler_4.0.2                cli_2.0.2                    
+## [19] rtracklayer_1.48.0            bookdown_0.20                
+## [21] scales_1.1.1                  genefilter_1.70.0            
+## [23] askpass_1.1                   rappdirs_0.3.1               
+## [25] stringr_1.4.0                 digest_0.6.25                
+## [27] Rsamtools_2.4.0               rmarkdown_2.3                
+## [29] XVector_0.28.0                pkgconfig_2.0.3              
+## [31] htmltools_0.5.0               fastmap_1.0.1                
+## [33] rlang_0.4.7                   rstudioapi_0.11              
+## [35] RSQLite_2.2.0                 shiny_1.5.0                  
+## [37] generics_0.0.2                BiocParallel_1.22.0          
+## [39] RCurl_1.98-1.2                magrittr_1.5                 
+## [41] GenomeInfoDbData_1.2.3        Matrix_1.2-18                
+## [43] Rcpp_1.0.5                    munsell_0.5.0                
+## [45] fansi_0.4.1                   lifecycle_0.2.0              
+## [47] stringi_1.4.6                 yaml_2.2.1                   
+## [49] zlibbioc_1.34.0               grid_4.0.2                   
+## [51] blob_1.2.1                    promises_1.1.1               
+## [53] crayon_1.3.4                  lattice_0.20-41              
+## [55] Biostrings_2.56.0             splines_4.0.2                
+## [57] annotate_1.66.0               hms_0.5.3                    
+## [59] locfit_1.5-9.4                knitr_1.29                   
+## [61] pillar_1.4.6                  geneplotter_1.66.0           
+## [63] codetools_0.2-16              biomaRt_2.44.1               
+## [65] BiocVersion_3.11.1            XML_3.99-0.5                 
+## [67] glue_1.4.2                    evaluate_0.14                
+## [69] BiocManager_1.30.10           httpuv_1.5.4                 
+## [71] vctrs_0.3.4                   gtable_0.3.0                 
+## [73] openssl_1.4.2                 purrr_0.3.4                  
+## [75] assertthat_0.2.1              ggplot2_3.3.2                
+## [77] xfun_0.16                     mime_0.9                     
+## [79] xtable_1.8-4                  later_1.1.0.1                
+## [81] survival_3.2-3                tibble_3.0.3                 
+## [83] GenomicAlignments_1.24.0      memoise_1.1.0                
+## [85] interactiveDisplayBase_1.26.3 ellipsis_0.3.1</code></pre>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="BulkRNASeq.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="discovering-genomic-coordinates.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/02-GeneIdMapping.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["Introduction to Bioconductor Annotation Resources.pdf", "Introduction to Bioconductor Annotation Resources.epub"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+</body>
+
+</html>
