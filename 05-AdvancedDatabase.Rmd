@@ -1,0 +1,125 @@
+# (Advanced) Working with SQL databases
+
+```{r echo = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+## What do we want to do?
+
+Return to our EnsDb package
+
+```{r, message = FALSE, cache = FALSE}
+library(EnsDb.Hsapiens.v75)
+EnsDb.Hsapiens.v75
+```
+
+Notice the second line of output above
+
+```
+|Backend: SQLite
+```
+
+The package actually 'wraps' a SQLite data base. Databases are very useful for
+managing large amounts of data, especially when the data consist of several
+'tables' that are related to one another in various ways.
+
+The [dbplyr][] package provides a very convenient way to work with databases,
+especially if you know a little R and 'tidyverse', but only some SQL.
+
+```{r, message = FALSE, cache = FALSE}
+library(dbplyr)
+```
+
+[dbplyr]: https://cran.r-project.org/package=dbplyr
+
+## Using [dbplyr][] to access the [EnsDb.Hsapiens.v75] database
+
+_R_ connects to SQL databases use 'connections'. Various packages provide 
+interfaces that connect to a number of different databases, e.g., [RSQLite][], [RMariaDB][], ... The databases can be local, or hosted on a server.
+
+[RSQLite]: https://cran.r-project.org/package=RSQLite
+[RMariaDB]: https://cran.r-project.org/package=RMariaDB
+
+We obtain a connection to the database underlying our EnsDb object using
+`dbconn()`; usually one would use the `dbConnect()` method defined in the corresponding
+
+```{r}
+dbconn(EnsDb.Hsapiens.v75)
+```
+
+Use `src_dbi()` to access the database connection from dbplyr
+
+```{r, cache = FALSE}
+tbls <- src_dbi( dbconn( EnsDb.Hsapiens.v75 ) )
+tbls
+```
+
+The output shows the location of the sqlite database, as well as the tables
+present in the database.
+
+## Working with database tables
+
+Many database operations are very straight-forward with dbplyr. Attach the
+[dplyr][] package to our session
+
+[dplyr]: https://cran.r-project.org/package=dply
+
+```{r, message = FALSE}
+library(dplyr)
+```
+
+Select the table of interest
+
+```{r}
+tbl(tbls, "gene")
+```
+
+Note that, unlike the output of an in-memory `tibble()`, the output does not
+display the number of rows in the database table -- dbplyr has retrieved only
+enough information from the database to display on the screen. 
+
+Apply many standard dplyr verbs, e.g.,
+
+```{r}
+tbl(tbls, "gene") %>%
+    dplyr::count(gene_biotype) %>%
+    arrange(desc(n))
+
+tbl(tbls, "gene") %>%
+    dplyr::filter(gene_biotype %in% c("lincRNA"))
+```
+
+Here's the 'tx' table, which includes the relationship between transcript and
+gene
+
+```{r}
+tbl(tbls, "tx") %>%
+    dplyr::select(gene_id, tx_id)
+```
+
+And the 'protein' table, which relates transcript to protien
+
+```{r}
+tbl(tbls, "protein")
+```
+
+If we wished to know the protien sequences produced by different genes, we
+could form a join between these two tables
+
+```{r}
+left_join(
+    tbl(tbls, "protein"),
+    tbl(tbls, "tx") %>%
+        dplyr::select(gene_id, tx_id),
+    by = "tx_id"
+)
+```
+
+Knowledge of dplyr verbs coupled with basic knowledge of SQL databases provide
+very useful tools for working with large, relationional data.
+
+## Saving and session information
+
+```{r}
+sessionInfo()
+```

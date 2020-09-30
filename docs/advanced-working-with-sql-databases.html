@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 2 Bulk RNA Sequencing | Bioconductor Annotation Resources</title>
+  <title>Chapter 6 (Advanced) Working with SQL databases | Bioconductor Annotation Resources</title>
   <meta name="description" content="This is a brief introduction to Bioconductor annotation resources, prepared for an R-Ladies session in Tunisia, September 30, 2020." />
   <meta name="generator" content="bookdown 0.20 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 2 Bulk RNA Sequencing | Bioconductor Annotation Resources" />
+  <meta property="og:title" content="Chapter 6 (Advanced) Working with SQL databases | Bioconductor Annotation Resources" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   <meta name="github-repo" content="rstudio/bookdown-demo" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 2 Bulk RNA Sequencing | Bioconductor Annotation Resources" />
+  <meta name="twitter:title" content="Chapter 6 (Advanced) Working with SQL databases | Bioconductor Annotation Resources" />
   
   <meta name="twitter:description" content="This is a brief introduction to Bioconductor annotation resources, prepared for an R-Ladies session in Tunisia, September 30, 2020." />
   
@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="index.html"/>
-<link rel="next" href="gene-symbol-mapping.html"/>
+<link rel="prev" href="gene-sets.html"/>
+
 <script src="libs/header-attrs-2.3/header-attrs.js"></script>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -194,184 +194,193 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="BulkRNASeq" class="section level1" number="2">
-<h1><span class="header-section-number">Chapter 2</span> Bulk RNA Sequencing</h1>
-<div id="rna-seq-differential-expression-data-in-r-bioconductor" class="section level2" number="2.1">
-<h2><span class="header-section-number">2.1</span> RNA-seq differential expression data in <em>R</em> / <em>Bioconductor</em></h2>
-<p>Bulk RNA sequencing starts by extracting tissue from samples, and then measuring
-‘gene expression’ for many 1000’s of genes in each sample. The [airway][] package
-is an example of bulk RNA-seq data, processed (see the airway <a href="https://bioconductor.org/packages/release/data/experiment/vignettes/airway/inst/doc/airway.html">vignette</a>,
-available from the package landing page) to a ‘SummarizedExperiment’ for use in <em>Bioconductor</em>.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="BulkRNASeq.html#cb3-1" aria-hidden="true"></a><span class="kw">library</span>(airway)</span>
-<span id="cb3-2"><a href="BulkRNASeq.html#cb3-2" aria-hidden="true"></a><span class="kw">data</span>(airway)</span>
-<span id="cb3-3"><a href="BulkRNASeq.html#cb3-3" aria-hidden="true"></a>airway</span></code></pre></div>
-<pre><code>## class: RangedSummarizedExperiment 
-## dim: 64102 8 
-## metadata(1): &#39;&#39;
-## assays(1): counts
-## rownames(64102): ENSG00000000003 ENSG00000000005 ... LRG_98 LRG_99
-## rowData names(0):
-## colnames(8): SRR1039508 SRR1039509 ... SRR1039520 SRR1039521
-## colData names(9): SampleName cell ... Sample BioSample</code></pre>
-<p>The essence of an RNA-seq differential expression expression is a matrix of
-counts of expression of individual genes in each sample. This data is available
-using the accessor <code>assay()</code></p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="BulkRNASeq.html#cb5-1" aria-hidden="true"></a><span class="kw">dim</span>(<span class="kw">assay</span>(airway))</span></code></pre></div>
-<pre><code>## [1] 64102     8</code></pre>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="BulkRNASeq.html#cb7-1" aria-hidden="true"></a><span class="kw">head</span>(<span class="kw">assay</span>(airway))</span></code></pre></div>
-<pre><code>##                 SRR1039508 SRR1039509 SRR1039512 SRR1039513 SRR1039516
-## ENSG00000000003        679        448        873        408       1138
-## ENSG00000000005          0          0          0          0          0
-## ENSG00000000419        467        515        621        365        587
-## ENSG00000000457        260        211        263        164        245
-## ENSG00000000460         60         55         40         35         78
-## ENSG00000000938          0          0          2          0          1
-##                 SRR1039517 SRR1039520 SRR1039521
-## ENSG00000000003       1047        770        572
-## ENSG00000000005          0          0          0
-## ENSG00000000419        799        417        508
-## ENSG00000000457        331        233        229
-## ENSG00000000460         63         76         60
-## ENSG00000000938          0          0          0</code></pre>
-<p>Usually the samples are taken from an <em>experimental design</em>. The samples might be
-from an actual experiment, or from, e.g., different tissues, etc.</p>
-<p>Here’s the experimental design:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="BulkRNASeq.html#cb9-1" aria-hidden="true"></a><span class="kw">colData</span>(airway)</span></code></pre></div>
-<pre><code>## DataFrame with 8 rows and 9 columns
-##            SampleName     cell      dex    albut        Run avgLength
-##              &lt;factor&gt; &lt;factor&gt; &lt;factor&gt; &lt;factor&gt;   &lt;factor&gt; &lt;integer&gt;
-## SRR1039508 GSM1275862  N61311     untrt    untrt SRR1039508       126
-## SRR1039509 GSM1275863  N61311     trt      untrt SRR1039509       126
-## SRR1039512 GSM1275866  N052611    untrt    untrt SRR1039512       126
-## SRR1039513 GSM1275867  N052611    trt      untrt SRR1039513        87
-## SRR1039516 GSM1275870  N080611    untrt    untrt SRR1039516       120
-## SRR1039517 GSM1275871  N080611    trt      untrt SRR1039517       126
-## SRR1039520 GSM1275874  N061011    untrt    untrt SRR1039520       101
-## SRR1039521 GSM1275875  N061011    trt      untrt SRR1039521        98
-##            Experiment    Sample    BioSample
-##              &lt;factor&gt;  &lt;factor&gt;     &lt;factor&gt;
-## SRR1039508  SRX384345 SRS508568 SAMN02422669
-## SRR1039509  SRX384346 SRS508567 SAMN02422675
-## SRR1039512  SRX384349 SRS508571 SAMN02422678
-## SRR1039513  SRX384350 SRS508572 SAMN02422670
-## SRR1039516  SRX384353 SRS508575 SAMN02422682
-## SRR1039517  SRX384354 SRS508576 SAMN02422673
-## SRR1039520  SRX384357 SRS508579 SAMN02422683
-## SRR1039521  SRX384358 SRS508580 SAMN02422677</code></pre>
-<p>There are 8 samples (‘Sample’) from four cell lines (‘cell’), exposed to two treatments of
-dexamethasone (‘dex’)</p>
-<p>When I explore data I sometimes like to use the ‘tidy’ approach</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="BulkRNASeq.html#cb11-1" aria-hidden="true"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb11-2"><a href="BulkRNASeq.html#cb11-2" aria-hidden="true"></a>design &lt;-</span>
-<span id="cb11-3"><a href="BulkRNASeq.html#cb11-3" aria-hidden="true"></a><span class="st">  </span><span class="kw">colData</span>(airway) <span class="op">%&gt;%</span></span>
-<span id="cb11-4"><a href="BulkRNASeq.html#cb11-4" aria-hidden="true"></a><span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span></span>
-<span id="cb11-5"><a href="BulkRNASeq.html#cb11-5" aria-hidden="true"></a><span class="st">  </span><span class="kw">select</span>(Sample, cell, dex)</span>
-<span id="cb11-6"><a href="BulkRNASeq.html#cb11-6" aria-hidden="true"></a>design</span></code></pre></div>
-<pre><code>## # A tibble: 8 x 3
-##   Sample    cell    dex  
-##   &lt;fct&gt;     &lt;fct&gt;   &lt;fct&gt;
-## 1 SRS508568 N61311  untrt
-## 2 SRS508567 N61311  trt  
-## 3 SRS508571 N052611 untrt
-## 4 SRS508572 N052611 trt  
-## 5 SRS508575 N080611 untrt
-## 6 SRS508576 N080611 trt  
-## 7 SRS508579 N061011 untrt
-## 8 SRS508580 N061011 trt</code></pre>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="BulkRNASeq.html#cb13-1" aria-hidden="true"></a>design <span class="op">%&gt;%</span></span>
-<span id="cb13-2"><a href="BulkRNASeq.html#cb13-2" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">count</span>(dex)</span></code></pre></div>
-<pre><code>## # A tibble: 2 x 2
-##   dex       n
-##   &lt;fct&gt; &lt;int&gt;
-## 1 trt       4
-## 2 untrt     4</code></pre>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="BulkRNASeq.html#cb15-1" aria-hidden="true"></a>design <span class="op">%&gt;%</span></span>
-<span id="cb15-2"><a href="BulkRNASeq.html#cb15-2" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">count</span>(cell)</span></code></pre></div>
-<pre><code>## # A tibble: 4 x 2
-##   cell        n
-##   &lt;fct&gt;   &lt;int&gt;
-## 1 N052611     2
-## 2 N061011     2
-## 3 N080611     2
-## 4 N61311      2</code></pre>
-<p>Today we’ll focus on the rows (genes) of the RNASeq experiment. In the airway
-data, the ‘rowData’ are very simple and consist just of <a href="https://ensemblgenomes.org/">Ensembl</a> gene identifiers</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="BulkRNASeq.html#cb17-1" aria-hidden="true"></a><span class="kw">rowData</span>(airway) <span class="op">%&gt;%</span></span>
-<span id="cb17-2"><a href="BulkRNASeq.html#cb17-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">as_tibble</span>(<span class="dt">rownames =</span> <span class="st">&quot;Gene&quot;</span>)</span></code></pre></div>
-<pre><code>## # A tibble: 64,102 x 1
-##    Gene           
-##    &lt;chr&gt;          
-##  1 ENSG00000000003
-##  2 ENSG00000000005
-##  3 ENSG00000000419
-##  4 ENSG00000000457
-##  5 ENSG00000000460
-##  6 ENSG00000000938
-##  7 ENSG00000000971
-##  8 ENSG00000001036
-##  9 ENSG00000001084
-## 10 ENSG00000001167
-## # … with 64,092 more rows</code></pre>
+<div id="advanced-working-with-sql-databases" class="section level1" number="6">
+<h1><span class="header-section-number">Chapter 6</span> (Advanced) Working with SQL databases</h1>
+<div id="what-do-we-want-to-do" class="section level2" number="6.1">
+<h2><span class="header-section-number">6.1</span> What do we want to do?</h2>
+<p>Return to our EnsDb package</p>
+<div class="sourceCode" id="cb127"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb127-1"><a href="advanced-working-with-sql-databases.html#cb127-1" aria-hidden="true"></a><span class="kw">library</span>(EnsDb.Hsapiens.v75)</span>
+<span id="cb127-2"><a href="advanced-working-with-sql-databases.html#cb127-2" aria-hidden="true"></a>EnsDb.Hsapiens.v75</span></code></pre></div>
+<pre><code>## EnsDb for Ensembl:
+## |Backend: SQLite
+## |Db type: EnsDb
+## |Type of Gene ID: Ensembl Gene ID
+## |Supporting package: ensembldb
+## |Db created by: ensembldb package from Bioconductor
+## |script_version: 0.3.0
+## |Creation time: Thu May 18 09:15:45 2017
+## |ensembl_version: 75
+## |ensembl_host: localhost
+## |Organism: homo_sapiens
+## |taxonomy_id: 9606
+## |genome_build: GRCh37
+## |DBSCHEMAVERSION: 2.0
+## | No. of genes: 64102.
+## | No. of transcripts: 215647.
+## |Protein data available.</code></pre>
+<p>Notice the second line of output above</p>
+<pre><code>|Backend: SQLite</code></pre>
+<p>The package actually ‘wraps’ a SQLite data base. Databases are very useful for
+managing large amounts of data, especially when the data consist of several
+‘tables’ that are related to one another in various ways.</p>
+<p>The <a href="https://cran.r-project.org/package=dbplyr">dbplyr</a> package provides a very convenient way to work with databases,
+especially if you know a little R and ‘tidyverse’, but only some SQL.</p>
+<div class="sourceCode" id="cb130"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb130-1"><a href="advanced-working-with-sql-databases.html#cb130-1" aria-hidden="true"></a><span class="kw">library</span>(dbplyr)</span></code></pre></div>
 </div>
-<div id="a-quick-analysis" class="section level2" number="2.2">
-<h2><span class="header-section-number">2.2</span> A quick analysis</h2>
-<p>It’s beyond the scope of today’s lecture, but let’s do a quick analysis of
-differenetial expression in the airway dataset.</p>
-<p>Start by loading the [DESeq2][] package</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="BulkRNASeq.html#cb19-1" aria-hidden="true"></a><span class="kw">library</span>(DESeq2)</span></code></pre></div>
-<p>Prepare the data by ‘re-leveling’ the ‘dex’ treatment variable, and describing
-the experirmental design</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="BulkRNASeq.html#cb20-1" aria-hidden="true"></a><span class="kw">colData</span>(airway)<span class="op">$</span>dex &lt;-<span class="st"> </span><span class="kw">relevel</span>(<span class="kw">colData</span>(airway)<span class="op">$</span>dex, <span class="st">&quot;untrt&quot;</span>)</span>
-<span id="cb20-2"><a href="BulkRNASeq.html#cb20-2" aria-hidden="true"></a>dds &lt;-<span class="st"> </span><span class="kw">DESeqDataSet</span>(airway, <span class="op">~</span><span class="st"> </span>cell <span class="op">+</span><span class="st"> </span>dex)</span></code></pre></div>
-<p>Perform the differential expression analysis…</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="BulkRNASeq.html#cb21-1" aria-hidden="true"></a>dds &lt;-<span class="st"> </span><span class="kw">DESeq</span>(dds)</span></code></pre></div>
-<pre><code>## estimating size factors</code></pre>
-<pre><code>## estimating dispersions</code></pre>
-<pre><code>## gene-wise dispersion estimates</code></pre>
-<pre><code>## mean-dispersion relationship</code></pre>
-<pre><code>## final dispersion estimates</code></pre>
-<pre><code>## fitting model and testing</code></pre>
-<p>…and summarize results in terms average expression (‘baseMean’), adjusted
-P-value (‘padj’), etc.</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="BulkRNASeq.html#cb28-1" aria-hidden="true"></a><span class="kw">results</span>(dds)</span></code></pre></div>
-<pre><code>## log2 fold change (MLE): dex trt vs untrt 
-## Wald test p-value: dex trt vs untrt 
-## DataFrame with 64102 rows and 6 columns
-##                  baseMean log2FoldChange     lfcSE      stat      pvalue
-##                 &lt;numeric&gt;      &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;   &lt;numeric&gt;
-## ENSG00000000003  708.6022     -0.3812539  0.100654 -3.787751 0.000152017
-## ENSG00000000005    0.0000             NA        NA        NA          NA
-## ENSG00000000419  520.2979      0.2068127  0.112219  1.842944 0.065337210
-## ENSG00000000457  237.1630      0.0379206  0.143445  0.264357 0.791504963
-## ENSG00000000460   57.9326     -0.0881677  0.287142 -0.307053 0.758803336
-## ...                   ...            ...       ...       ...         ...
-## LRG_94                  0             NA        NA        NA          NA
-## LRG_96                  0             NA        NA        NA          NA
-## LRG_97                  0             NA        NA        NA          NA
-## LRG_98                  0             NA        NA        NA          NA
-## LRG_99                  0             NA        NA        NA          NA
-##                       padj
-##                  &lt;numeric&gt;
-## ENSG00000000003 0.00128364
-## ENSG00000000005         NA
-## ENSG00000000419 0.19654584
-## ENSG00000000457 0.91145800
-## ENSG00000000460 0.89503445
-## ...                    ...
-## LRG_94                  NA
-## LRG_96                  NA
-## LRG_97                  NA
-## LRG_98                  NA
-## LRG_99                  NA</code></pre>
-<p>For convenience, add the results to the <code>rowData()</code> of the airway dataset</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="BulkRNASeq.html#cb30-1" aria-hidden="true"></a><span class="kw">rowData</span>(airway) &lt;-<span class="st"> </span><span class="kw">results</span>(dds)</span></code></pre></div>
+<div id="using-dbplyr-to-access-the-ensdb.hsapiens.v75-database" class="section level2" number="6.2">
+<h2><span class="header-section-number">6.2</span> Using <a href="https://cran.r-project.org/package=dbplyr">dbplyr</a> to access the [EnsDb.Hsapiens.v75] database</h2>
+<p><em>R</em> connects to SQL databases use ‘connections’. Various packages provide
+interfaces that connect to a number of different databases, e.g., <a href="https://cran.r-project.org/package=RSQLite">RSQLite</a>, <a href="https://cran.r-project.org/package=RMariaDB">RMariaDB</a>, … The databases can be local, or hosted on a server.</p>
+<p>We obtain a connection to the database underlying our EnsDb object using
+<code>dbconn()</code>; usually one would use the <code>dbConnect()</code> method defined in the corresponding</p>
+<div class="sourceCode" id="cb131"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb131-1"><a href="advanced-working-with-sql-databases.html#cb131-1" aria-hidden="true"></a><span class="kw">dbconn</span>(EnsDb.Hsapiens.v75)</span></code></pre></div>
+<pre><code>## &lt;SQLiteConnection&gt;
+##   Path: /Users/ma38727/Library/R/4.0/Bioc/3.11/library/EnsDb.Hsapiens.v75/extdata/EnsDb.Hsapiens.v75.sqlite
+##   Extensions: TRUE</code></pre>
+<p>Use <code>src_dbi()</code> to access the database connection from dbplyr</p>
+<div class="sourceCode" id="cb133"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb133-1"><a href="advanced-working-with-sql-databases.html#cb133-1" aria-hidden="true"></a>tbls &lt;-<span class="st"> </span><span class="kw">src_dbi</span>( <span class="kw">dbconn</span>( EnsDb.Hsapiens.v75 ) )</span>
+<span id="cb133-2"><a href="advanced-working-with-sql-databases.html#cb133-2" aria-hidden="true"></a>tbls</span></code></pre></div>
+<pre><code>## src:  sqlite 3.30.1 [/Users/ma38727/Library/R/4.0/Bioc/3.11/library/EnsDb.Hsapiens.v75/extdata/EnsDb.Hsapiens.v75.sqlite]
+## tbls: chromosome, entrezgene, exon, gene, metadata, protein, protein_domain,
+##   tx, tx2exon, uniprot</code></pre>
+<p>The output shows the location of the sqlite database, as well as the tables
+present in the database.</p>
 </div>
-<div id="saving-and-session-information" class="section level2" number="2.3">
-<h2><span class="header-section-number">2.3</span> Saving and session information</h2>
-<p>Save the updated object for use in the next chapter.</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="BulkRNASeq.html#cb31-1" aria-hidden="true"></a><span class="kw">saveRDS</span>(airway, <span class="st">&quot;airway_with_results.Rda&quot;</span>)</span></code></pre></div>
-<p>Use the <code>sessionInfo()</code> command to record the precise software versions we used.</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="BulkRNASeq.html#cb32-1" aria-hidden="true"></a><span class="kw">sessionInfo</span>()</span></code></pre></div>
+<div id="working-with-database-tables" class="section level2" number="6.3">
+<h2><span class="header-section-number">6.3</span> Working with database tables</h2>
+<p>Many database operations are very straight-forward with dbplyr. Attach the
+<a href="https://cran.r-project.org/package=dply">dplyr</a> package to our session</p>
+<div class="sourceCode" id="cb135"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb135-1"><a href="advanced-working-with-sql-databases.html#cb135-1" aria-hidden="true"></a><span class="kw">library</span>(dplyr)</span></code></pre></div>
+<p>Select the table of interest</p>
+<div class="sourceCode" id="cb136"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb136-1"><a href="advanced-working-with-sql-databases.html#cb136-1" aria-hidden="true"></a><span class="kw">tbl</span>(tbls, <span class="st">&quot;gene&quot;</span>)</span></code></pre></div>
+<pre><code>## # Source:   table&lt;gene&gt; [?? x 8]
+## # Database: sqlite 3.30.1
+## #   [/Users/ma38727/Library/R/4.0/Bioc/3.11/library/EnsDb.Hsapiens.v75/extdata/EnsDb.Hsapiens.v75.sqlite]
+##    gene_id gene_name gene_biotype gene_seq_start gene_seq_end seq_name
+##    &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;                 &lt;int&gt;        &lt;int&gt; &lt;chr&gt;   
+##  1 ENSG00… TSPAN6    protein_cod…       99883667     99894988 X       
+##  2 ENSG00… TNMD      protein_cod…       99839799     99854882 X       
+##  3 ENSG00… DPM1      protein_cod…       49551404     49575092 20      
+##  4 ENSG00… SCYL3     protein_cod…      169818772    169863408 1       
+##  5 ENSG00… C1orf112  protein_cod…      169631245    169823221 1       
+##  6 ENSG00… FGR       protein_cod…       27938575     27961788 1       
+##  7 ENSG00… CFH       protein_cod…      196621008    196716634 1       
+##  8 ENSG00… FUCA2     protein_cod…      143815948    143832827 6       
+##  9 ENSG00… GCLC      protein_cod…       53362139     53481768 6       
+## 10 ENSG00… NFYA      protein_cod…       41040684     41067715 6       
+## # … with more rows, and 2 more variables: seq_strand &lt;int&gt;,
+## #   seq_coord_system &lt;chr&gt;</code></pre>
+<p>Note that, unlike the output of an in-memory <code>tibble()</code>, the output does not
+display the number of rows in the database table – dbplyr has retrieved only
+enough information from the database to display on the screen.</p>
+<p>Apply many standard dplyr verbs, e.g.,</p>
+<div class="sourceCode" id="cb138"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb138-1"><a href="advanced-working-with-sql-databases.html#cb138-1" aria-hidden="true"></a><span class="kw">tbl</span>(tbls, <span class="st">&quot;gene&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb138-2"><a href="advanced-working-with-sql-databases.html#cb138-2" aria-hidden="true"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">count</span>(gene_biotype) <span class="op">%&gt;%</span></span>
+<span id="cb138-3"><a href="advanced-working-with-sql-databases.html#cb138-3" aria-hidden="true"></a><span class="st">    </span><span class="kw">arrange</span>(<span class="kw">desc</span>(n))</span></code></pre></div>
+<pre><code>## # Source:     lazy query [?? x 2]
+## # Database:   sqlite 3.30.1
+## #   [/Users/ma38727/Library/R/4.0/Bioc/3.11/library/EnsDb.Hsapiens.v75/extdata/EnsDb.Hsapiens.v75.sqlite]
+## # Ordered by: desc(n)
+##    gene_biotype             n
+##    &lt;chr&gt;                &lt;int&gt;
+##  1 protein_coding       22810
+##  2 pseudogene           15583
+##  3 lincRNA               7340
+##  4 antisense             5485
+##  5 miRNA                 3361
+##  6 misc_RNA              2174
+##  7 snRNA                 2067
+##  8 snoRNA                1549
+##  9 processed_transcript   819
+## 10 sense_intronic         767
+## # … with more rows</code></pre>
+<div class="sourceCode" id="cb140"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb140-1"><a href="advanced-working-with-sql-databases.html#cb140-1" aria-hidden="true"></a><span class="kw">tbl</span>(tbls, <span class="st">&quot;gene&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb140-2"><a href="advanced-working-with-sql-databases.html#cb140-2" aria-hidden="true"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">filter</span>(gene_biotype <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;lincRNA&quot;</span>))</span></code></pre></div>
+<pre><code>## # Source:   lazy query [?? x 8]
+## # Database: sqlite 3.30.1
+## #   [/Users/ma38727/Library/R/4.0/Bioc/3.11/library/EnsDb.Hsapiens.v75/extdata/EnsDb.Hsapiens.v75.sqlite]
+##    gene_id gene_name gene_biotype gene_seq_start gene_seq_end seq_name
+##    &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;                 &lt;int&gt;        &lt;int&gt; &lt;chr&gt;   
+##  1 ENSG00… TPTEP1    lincRNA            17082777     17179632 22      
+##  2 ENSG00… RP11-153… lincRNA            23334268     23404433 12      
+##  3 ENSG00… LINC00544 lincRNA            30510042     30524625 13      
+##  4 ENSG00… RP11-467… lincRNA            61513965     61525127 11      
+##  5 ENSG00… LINC00029 lincRNA            61665569     61668380 20      
+##  6 ENSG00… TTTY1B    lincRNA             6258472      6279605 Y       
+##  7 ENSG00… TTTY1     lincRNA             9590765      9611898 Y       
+##  8 ENSG00… TTTY6     lincRNA            24585740     24587605 Y       
+##  9 ENSG00… LINC00470 lincRNA             1254384      1408345 18      
+## 10 ENSG00… RP11-84C… lincRNA            21387500     21388458 14      
+## # … with more rows, and 2 more variables: seq_strand &lt;int&gt;,
+## #   seq_coord_system &lt;chr&gt;</code></pre>
+<p>Here’s the ‘tx’ table, which includes the relationship between transcript and
+gene</p>
+<div class="sourceCode" id="cb142"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb142-1"><a href="advanced-working-with-sql-databases.html#cb142-1" aria-hidden="true"></a><span class="kw">tbl</span>(tbls, <span class="st">&quot;tx&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb142-2"><a href="advanced-working-with-sql-databases.html#cb142-2" aria-hidden="true"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(gene_id, tx_id)</span></code></pre></div>
+<pre><code>## # Source:   lazy query [?? x 2]
+## # Database: sqlite 3.30.1
+## #   [/Users/ma38727/Library/R/4.0/Bioc/3.11/library/EnsDb.Hsapiens.v75/extdata/EnsDb.Hsapiens.v75.sqlite]
+##    gene_id         tx_id          
+##    &lt;chr&gt;           &lt;chr&gt;          
+##  1 ENSG00000000003 ENST00000373020
+##  2 ENSG00000000003 ENST00000496771
+##  3 ENSG00000000003 ENST00000494424
+##  4 ENSG00000000005 ENST00000373031
+##  5 ENSG00000000005 ENST00000485971
+##  6 ENSG00000000419 ENST00000371588
+##  7 ENSG00000000419 ENST00000466152
+##  8 ENSG00000000419 ENST00000371582
+##  9 ENSG00000000419 ENST00000494752
+## 10 ENSG00000000419 ENST00000371584
+## # … with more rows</code></pre>
+<p>And the ‘protein’ table, which relates transcript to protien</p>
+<div class="sourceCode" id="cb144"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb144-1"><a href="advanced-working-with-sql-databases.html#cb144-1" aria-hidden="true"></a><span class="kw">tbl</span>(tbls, <span class="st">&quot;protein&quot;</span>)</span></code></pre></div>
+<pre><code>## # Source:   table&lt;protein&gt; [?? x 3]
+## # Database: sqlite 3.30.1
+## #   [/Users/ma38727/Library/R/4.0/Bioc/3.11/library/EnsDb.Hsapiens.v75/extdata/EnsDb.Hsapiens.v75.sqlite]
+##    tx_id       protein_id    protein_sequence                                   
+##    &lt;chr&gt;       &lt;chr&gt;         &lt;chr&gt;                                              
+##  1 ENST000003… ENSP00000362… MASPSRRLQTKPVITCFKSVLLIYTFIFWITGVILLAVGIWGKVSLENYF…
+##  2 ENST000003… ENSP00000362… MAKNPPENCEDCHILNAEAFKSKKICKSLKICGLVFGILALTLIVLFWGS…
+##  3 ENST000003… ENSP00000360… MASLEVSRSPRRSRRELEVRSPRQNKYSVLLPTYNERENLPLIVWLLVKS…
+##  4 ENST000003… ENSP00000360… MASLEVSRSPRRSRRELEVRSPRQNKYSVLLPTYNERENLPLIVWLLVKS…
+##  5 ENST000003… ENSP00000360… XASLEVSRSPRRSRRELEVRSPRQNKYSVLLPTYNERENLPLIVWLLVKS…
+##  6 ENST000004… ENSP00000394… MASLEVSRSPRRSRRELEVRSPRQNKYSVLLPTYNERENLPLIVWLLVKS…
+##  7 ENST000003… ENSP00000360… MASLEVSRSPRRSRRELEVRSPRQNKYSVLLPTYNERENLPLIVWLLVKS…
+##  8 ENST000003… ENSP00000356… MGSENSALKSYTLREPPFTLPSGLAVYPAVLQDGKFASVFVYKRENEDKV…
+##  9 ENST000003… ENSP00000356… MGSENSALKSYTLREPPFTLPSGLAVYPAVLQDGKFASVFVYKRENEDKV…
+## 10 ENST000004… ENSP00000407… MGSENSALKSYTLREPPFTLPSGLAVYPAVLQDGKFASVFVYKRENEDKV…
+## # … with more rows</code></pre>
+<p>If we wished to know the protien sequences produced by different genes, we
+could form a join between these two tables</p>
+<div class="sourceCode" id="cb146"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb146-1"><a href="advanced-working-with-sql-databases.html#cb146-1" aria-hidden="true"></a><span class="kw">left_join</span>(</span>
+<span id="cb146-2"><a href="advanced-working-with-sql-databases.html#cb146-2" aria-hidden="true"></a>    <span class="kw">tbl</span>(tbls, <span class="st">&quot;protein&quot;</span>),</span>
+<span id="cb146-3"><a href="advanced-working-with-sql-databases.html#cb146-3" aria-hidden="true"></a>    <span class="kw">tbl</span>(tbls, <span class="st">&quot;tx&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb146-4"><a href="advanced-working-with-sql-databases.html#cb146-4" aria-hidden="true"></a><span class="st">        </span>dplyr<span class="op">::</span><span class="kw">select</span>(gene_id, tx_id),</span>
+<span id="cb146-5"><a href="advanced-working-with-sql-databases.html#cb146-5" aria-hidden="true"></a>    <span class="dt">by =</span> <span class="st">&quot;tx_id&quot;</span></span>
+<span id="cb146-6"><a href="advanced-working-with-sql-databases.html#cb146-6" aria-hidden="true"></a>)</span></code></pre></div>
+<pre><code>## # Source:   lazy query [?? x 4]
+## # Database: sqlite 3.30.1
+## #   [/Users/ma38727/Library/R/4.0/Bioc/3.11/library/EnsDb.Hsapiens.v75/extdata/EnsDb.Hsapiens.v75.sqlite]
+##    tx_id      protein_id   protein_sequence                           gene_id   
+##    &lt;chr&gt;      &lt;chr&gt;        &lt;chr&gt;                                      &lt;chr&gt;     
+##  1 ENST00000… ENSP0000036… MASPSRRLQTKPVITCFKSVLLIYTFIFWITGVILLAVGIW… ENSG00000…
+##  2 ENST00000… ENSP0000036… MAKNPPENCEDCHILNAEAFKSKKICKSLKICGLVFGILAL… ENSG00000…
+##  3 ENST00000… ENSP0000036… MASLEVSRSPRRSRRELEVRSPRQNKYSVLLPTYNERENLP… ENSG00000…
+##  4 ENST00000… ENSP0000036… MASLEVSRSPRRSRRELEVRSPRQNKYSVLLPTYNERENLP… ENSG00000…
+##  5 ENST00000… ENSP0000036… XASLEVSRSPRRSRRELEVRSPRQNKYSVLLPTYNERENLP… ENSG00000…
+##  6 ENST00000… ENSP0000039… MASLEVSRSPRRSRRELEVRSPRQNKYSVLLPTYNERENLP… ENSG00000…
+##  7 ENST00000… ENSP0000036… MASLEVSRSPRRSRRELEVRSPRQNKYSVLLPTYNERENLP… ENSG00000…
+##  8 ENST00000… ENSP0000035… MGSENSALKSYTLREPPFTLPSGLAVYPAVLQDGKFASVFV… ENSG00000…
+##  9 ENST00000… ENSP0000035… MGSENSALKSYTLREPPFTLPSGLAVYPAVLQDGKFASVFV… ENSG00000…
+## 10 ENST00000… ENSP0000040… MGSENSALKSYTLREPPFTLPSGLAVYPAVLQDGKFASVFV… ENSG00000…
+## # … with more rows</code></pre>
+<p>Knowledge of dplyr verbs coupled with basic knowledge of SQL databases provide
+very useful tools for working with large, relationional data.</p>
+</div>
+<div id="saving-and-session-information" class="section level2" number="6.4">
+<h2><span class="header-section-number">6.4</span> Saving and session information</h2>
+<div class="sourceCode" id="cb148"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb148-1"><a href="advanced-working-with-sql-databases.html#cb148-1" aria-hidden="true"></a><span class="kw">sessionInfo</span>()</span></code></pre></div>
 <pre><code>## R version 4.0.2 Patched (2020-09-15 r79213)
 ## Platform: x86_64-apple-darwin17.7.0 (64-bit)
 ## Running under: macOS High Sierra 10.13.6
@@ -455,8 +464,8 @@ P-value (‘padj’), etc.</p>
           </div>
         </div>
       </div>
-<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="gene-symbol-mapping.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="gene-sets.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -487,7 +496,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/rstudio/bookdown-demo/edit/master/01-RNASeq.Rmd",
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/05-AdvancedDatabase.Rmd",
 "text": "Edit"
 },
 "history": {

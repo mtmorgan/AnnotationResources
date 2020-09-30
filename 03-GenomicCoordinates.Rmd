@@ -20,7 +20,7 @@ start and end nucleotides) of each of these genes?
 
 ## Genomic ranges
 
-_Bioconductor uses the [GenomicRanges][] package to represent genomic
+_Bioconductor_ uses the [GenomicRanges][] package to represent genomic
 coordinates.
 
 ```{r, message = FALSE}

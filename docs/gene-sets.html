@@ -32,7 +32,7 @@
   
   
 <link rel="prev" href="discovering-genomic-coordinates.html"/>
-<link rel="next" href="references.html"/>
+<link rel="next" href="advanced-working-with-sql-databases.html"/>
 <script src="libs/header-attrs-2.3/header-attrs.js"></script>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -167,7 +167,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="5.4" data-path="gene-sets.html"><a href="gene-sets.html#more-flexible-gene-set-annotation-using-biocset"><i class="fa fa-check"></i><b>5.4</b> More flexible gene set annotation using <span>BiocSet</span></a></li>
 <li class="chapter" data-level="5.5" data-path="BulkRNASeq.html"><a href="BulkRNASeq.html#saving-and-session-information"><i class="fa fa-check"></i><b>5.5</b> Saving and session information</a></li>
 </ul></li>
-<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="chapter" data-level="6" data-path="advanced-working-with-sql-databases.html"><a href="advanced-working-with-sql-databases.html"><i class="fa fa-check"></i><b>6</b> (Advanced) Working with SQL databases</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="gene-symbol-mapping.html"><a href="gene-symbol-mapping.html#what-do-we-want-to-do"><i class="fa fa-check"></i><b>6.1</b> What do we want to do?</a></li>
+<li class="chapter" data-level="6.2" data-path="advanced-working-with-sql-databases.html"><a href="advanced-working-with-sql-databases.html#using-dbplyr-to-access-the-ensdb.hsapiens.v75-database"><i class="fa fa-check"></i><b>6.2</b> Using <span>dbplyr</span> to access the [EnsDb.Hsapiens.v75] database</a></li>
+<li class="chapter" data-level="6.3" data-path="advanced-working-with-sql-databases.html"><a href="advanced-working-with-sql-databases.html#working-with-database-tables"><i class="fa fa-check"></i><b>6.3</b> Working with database tables</a></li>
+<li class="chapter" data-level="6.4" data-path="BulkRNASeq.html"><a href="BulkRNASeq.html#saving-and-session-information"><i class="fa fa-check"></i><b>6.4</b> Saving and session information</a></li>
+</ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
 
@@ -245,9 +251,8 @@ columns contain GO ids</p>
 one biological pathway). Use <code>AnnotationDbi::select()</code> to map between ENTREZID
 and GO id; we’ll represent the result as a tibble for convenience</p>
 <div class="sourceCode" id="cb96"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb96-1"><a href="gene-sets.html#cb96-1" aria-hidden="true"></a>eggo &lt;-<span class="st"> </span>AnnotationDbi<span class="op">::</span><span class="kw">select</span>(org.Hs.eg.db, toptbl<span class="op">$</span>ENTREZID, <span class="st">&quot;GO&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb96-2"><a href="gene-sets.html#cb96-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">as_tibble</span>()</span></code></pre></div>
-<pre><code>## &#39;select()&#39; returned many:many mapping between keys and columns</code></pre>
-<div class="sourceCode" id="cb98"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb98-1"><a href="gene-sets.html#cb98-1" aria-hidden="true"></a>eggo</span></code></pre></div>
+<span id="cb96-2"><a href="gene-sets.html#cb96-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">as_tibble</span>()</span>
+<span id="cb96-3"><a href="gene-sets.html#cb96-3" aria-hidden="true"></a>eggo</span></code></pre></div>
 <pre><code>## # A tibble: 364,454 x 4
 ##    ENTREZID GO         EVIDENCE ONTOLOGY
 ##    &lt;chr&gt;    &lt;chr&gt;      &lt;chr&gt;    &lt;chr&gt;   
@@ -266,13 +271,13 @@ and GO id; we’ll represent the result as a tibble for convenience</p>
 ‘EVIDENCE’ (the type of evidence, e.g., experimental verification,
 computational inference, …) that supports the classification of a particular
 ENTREZ identifier to a particular GO identifier.</p>
-<div class="sourceCode" id="cb100"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb100-1"><a href="gene-sets.html#cb100-1" aria-hidden="true"></a>eggo &lt;-</span>
-<span id="cb100-2"><a href="gene-sets.html#cb100-2" aria-hidden="true"></a><span class="st">  </span>eggo <span class="op">%&gt;%</span></span>
-<span id="cb100-3"><a href="gene-sets.html#cb100-3" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">rename</span>(<span class="dt">GOID =</span> <span class="st">&quot;GO&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb100-4"><a href="gene-sets.html#cb100-4" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span>EVIDENCE) <span class="op">%&gt;%</span></span>
-<span id="cb100-5"><a href="gene-sets.html#cb100-5" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(ONTOLOGY <span class="op">%in%</span><span class="st"> &quot;BP&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb100-6"><a href="gene-sets.html#cb100-6" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">distinct</span>()</span>
-<span id="cb100-7"><a href="gene-sets.html#cb100-7" aria-hidden="true"></a>eggo</span></code></pre></div>
+<div class="sourceCode" id="cb98"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb98-1"><a href="gene-sets.html#cb98-1" aria-hidden="true"></a>eggo &lt;-</span>
+<span id="cb98-2"><a href="gene-sets.html#cb98-2" aria-hidden="true"></a><span class="st">  </span>eggo <span class="op">%&gt;%</span></span>
+<span id="cb98-3"><a href="gene-sets.html#cb98-3" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">rename</span>(<span class="dt">GOID =</span> <span class="st">&quot;GO&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb98-4"><a href="gene-sets.html#cb98-4" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span>EVIDENCE) <span class="op">%&gt;%</span></span>
+<span id="cb98-5"><a href="gene-sets.html#cb98-5" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(ONTOLOGY <span class="op">%in%</span><span class="st"> &quot;BP&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb98-6"><a href="gene-sets.html#cb98-6" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">distinct</span>()</span>
+<span id="cb98-7"><a href="gene-sets.html#cb98-7" aria-hidden="true"></a>eggo</span></code></pre></div>
 <pre><code>## # A tibble: 132,810 x 3
 ##    ENTREZID GOID       ONTOLOGY
 ##    &lt;chr&gt;    &lt;chr&gt;      &lt;chr&gt;   
@@ -291,16 +296,16 @@ ENTREZ identifier to a particular GO identifier.</p>
 <div id="using-go-gene-ontology-annotations-to-group-genes-by-biological-process" class="section level2" number="5.3">
 <h2><span class="header-section-number">5.3</span> Using GO (gene ontology) annotations to group genes by biological process</h2>
 <p>The <a href="https://bioconductor.org/packages/GO.db">GO.db</a> package provides information on GO identifiers.</p>
-<div class="sourceCode" id="cb102"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb102-1"><a href="gene-sets.html#cb102-1" aria-hidden="true"></a><span class="kw">library</span>(GO.db)</span>
-<span id="cb102-2"><a href="gene-sets.html#cb102-2" aria-hidden="true"></a><span class="kw">columns</span>(GO.db)</span></code></pre></div>
+<div class="sourceCode" id="cb100"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb100-1"><a href="gene-sets.html#cb100-1" aria-hidden="true"></a><span class="kw">library</span>(GO.db)</span>
+<span id="cb100-2"><a href="gene-sets.html#cb100-2" aria-hidden="true"></a><span class="kw">columns</span>(GO.db)</span></code></pre></div>
 <pre><code>## [1] &quot;DEFINITION&quot; &quot;GOID&quot;       &quot;ONTOLOGY&quot;   &quot;TERM&quot;</code></pre>
 <p>Use <code>AnnotationDbi::select()</code> to explore information about a particular GO id</p>
-<div class="sourceCode" id="cb104"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb104-1"><a href="gene-sets.html#cb104-1" aria-hidden="true"></a>goid &lt;-<span class="st"> &quot;GO:0007165&quot;</span></span>
-<span id="cb104-2"><a href="gene-sets.html#cb104-2" aria-hidden="true"></a>AnnotationDbi<span class="op">::</span><span class="kw">select</span>(GO.db, goid, <span class="st">&quot;TERM&quot;</span>, <span class="st">&quot;GOID&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb102"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb102-1"><a href="gene-sets.html#cb102-1" aria-hidden="true"></a>goid &lt;-<span class="st"> &quot;GO:0007165&quot;</span></span>
+<span id="cb102-2"><a href="gene-sets.html#cb102-2" aria-hidden="true"></a>AnnotationDbi<span class="op">::</span><span class="kw">select</span>(GO.db, goid, <span class="st">&quot;TERM&quot;</span>, <span class="st">&quot;GOID&quot;</span>)</span></code></pre></div>
 <pre><code>##         GOID                TERM
 ## 1 GO:0007165 signal transduction</code></pre>
-<div class="sourceCode" id="cb106"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb106-1"><a href="gene-sets.html#cb106-1" aria-hidden="true"></a>def =<span class="st"> </span>AnnotationDbi<span class="op">::</span><span class="kw">select</span>(GO.db, goid, <span class="st">&quot;DEFINITION&quot;</span>, <span class="st">&quot;GOID&quot;</span>)</span>
-<span id="cb106-2"><a href="gene-sets.html#cb106-2" aria-hidden="true"></a><span class="kw">cat</span>(<span class="kw">strwrap</span>(def<span class="op">$</span>DEFINITION), <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb104"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb104-1"><a href="gene-sets.html#cb104-1" aria-hidden="true"></a>def =<span class="st"> </span>AnnotationDbi<span class="op">::</span><span class="kw">select</span>(GO.db, goid, <span class="st">&quot;DEFINITION&quot;</span>, <span class="st">&quot;GOID&quot;</span>)</span>
+<span id="cb104-2"><a href="gene-sets.html#cb104-2" aria-hidden="true"></a><span class="kw">cat</span>(<span class="kw">strwrap</span>(def<span class="op">$</span>DEFINITION), <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
 <pre><code>## The cellular process in which a signal is conveyed to trigger a change
 ## in the activity or state of a cell. Signal transduction begins with
 ## reception of a signal (e.g. a ligand binding to a receptor or receptor
@@ -314,14 +319,13 @@ ENTREZ identifier to a particular GO identifier.</p>
 ## cells, signal transduction is restricted to events at and within the
 ## receiving cell.</code></pre>
 <p>Add terms and definitions to all rows of <code>eggo</code></p>
-<div class="sourceCode" id="cb108"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb108-1"><a href="gene-sets.html#cb108-1" aria-hidden="true"></a>goinfo &lt;-<span class="st"> </span></span>
-<span id="cb108-2"><a href="gene-sets.html#cb108-2" aria-hidden="true"></a><span class="st">  </span>AnnotationDbi<span class="op">::</span><span class="kw">select</span>(</span>
-<span id="cb108-3"><a href="gene-sets.html#cb108-3" aria-hidden="true"></a>    GO.db, eggo<span class="op">$</span>GOID, <span class="kw">c</span>(<span class="st">&quot;TERM&quot;</span>, <span class="st">&quot;DEFINITION&quot;</span>), <span class="st">&quot;GOID&quot;</span></span>
-<span id="cb108-4"><a href="gene-sets.html#cb108-4" aria-hidden="true"></a>  ) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb108-5"><a href="gene-sets.html#cb108-5" aria-hidden="true"></a><span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span></span>
-<span id="cb108-6"><a href="gene-sets.html#cb108-6" aria-hidden="true"></a><span class="st">  </span><span class="kw">distinct</span>()</span></code></pre></div>
-<pre><code>## &#39;select()&#39; returned many:1 mapping between keys and columns</code></pre>
-<div class="sourceCode" id="cb110"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb110-1"><a href="gene-sets.html#cb110-1" aria-hidden="true"></a>goinfo</span></code></pre></div>
+<div class="sourceCode" id="cb106"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb106-1"><a href="gene-sets.html#cb106-1" aria-hidden="true"></a>goinfo &lt;-<span class="st"> </span></span>
+<span id="cb106-2"><a href="gene-sets.html#cb106-2" aria-hidden="true"></a><span class="st">  </span>AnnotationDbi<span class="op">::</span><span class="kw">select</span>(</span>
+<span id="cb106-3"><a href="gene-sets.html#cb106-3" aria-hidden="true"></a>    GO.db, eggo<span class="op">$</span>GOID, <span class="kw">c</span>(<span class="st">&quot;TERM&quot;</span>, <span class="st">&quot;DEFINITION&quot;</span>), <span class="st">&quot;GOID&quot;</span></span>
+<span id="cb106-4"><a href="gene-sets.html#cb106-4" aria-hidden="true"></a>  ) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb106-5"><a href="gene-sets.html#cb106-5" aria-hidden="true"></a><span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span></span>
+<span id="cb106-6"><a href="gene-sets.html#cb106-6" aria-hidden="true"></a><span class="st">  </span><span class="kw">distinct</span>()</span>
+<span id="cb106-7"><a href="gene-sets.html#cb106-7" aria-hidden="true"></a>goinfo</span></code></pre></div>
 <pre><code>## # A tibble: 12,130 x 3
 ##    GOID     TERM                     DEFINITION                                 
 ##    &lt;chr&gt;    &lt;chr&gt;                    &lt;chr&gt;                                      
@@ -338,8 +342,8 @@ ENTREZ identifier to a particular GO identifier.</p>
 ## # … with 12,120 more rows</code></pre>
 <p>Use <code>dplyr::left_join()</code> to join all rows of <code>eggo</code> to their corresponding
 term and definition…</p>
-<div class="sourceCode" id="cb112"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb112-1"><a href="gene-sets.html#cb112-1" aria-hidden="true"></a>eggoinfo &lt;-<span class="st"> </span><span class="kw">left_join</span>(eggo, goinfo, <span class="dt">by =</span> <span class="st">&quot;GOID&quot;</span>)</span>
-<span id="cb112-2"><a href="gene-sets.html#cb112-2" aria-hidden="true"></a>eggoinfo</span></code></pre></div>
+<div class="sourceCode" id="cb108"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb108-1"><a href="gene-sets.html#cb108-1" aria-hidden="true"></a>eggoinfo &lt;-<span class="st"> </span><span class="kw">left_join</span>(eggo, goinfo, <span class="dt">by =</span> <span class="st">&quot;GOID&quot;</span>)</span>
+<span id="cb108-2"><a href="gene-sets.html#cb108-2" aria-hidden="true"></a>eggoinfo</span></code></pre></div>
 <pre><code>## # A tibble: 132,810 x 5
 ##    ENTREZID GOID    ONTOLOGY TERM               DEFINITION                      
 ##    &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;              &lt;chr&gt;                           
@@ -355,7 +359,7 @@ term and definition…</p>
 ## 10 783      GO:007… BP       calcium ion import The directed movement of calciu…
 ## # … with 132,800 more rows</code></pre>
 <p>…and even add the top table gene expression information</p>
-<div class="sourceCode" id="cb114"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb114-1"><a href="gene-sets.html#cb114-1" aria-hidden="true"></a><span class="kw">left_join</span>(eggoinfo, toptbl, <span class="dt">by =</span> <span class="st">&quot;ENTREZID&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb110"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb110-1"><a href="gene-sets.html#cb110-1" aria-hidden="true"></a><span class="kw">left_join</span>(eggoinfo, toptbl, <span class="dt">by =</span> <span class="st">&quot;ENTREZID&quot;</span>)</span></code></pre></div>
 <pre><code>## # A tibble: 155,800 x 13
 ##    ENTREZID GOID  ONTOLOGY TERM  DEFINITION Gene  SYMBOL baseMean log2FoldChange
 ##    &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;          &lt;dbl&gt;
@@ -374,10 +378,134 @@ term and definition…</p>
 </div>
 <div id="more-flexible-gene-set-annotation-using-biocset" class="section level2" number="5.4">
 <h2><span class="header-section-number">5.4</span> More flexible gene set annotation using <a href="https://bioconductor.org/packages/BiocSet">BiocSet</a></h2>
+<p>Gene sets can be thought of as a three related ‘tables’: genes, sets, and the
+gene/set relationship. <a href="https://bioconductor.org/packages/BiocSet">BiocSet</a> provides a way to manage these tables.</p>
+<div class="sourceCode" id="cb112"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb112-1"><a href="gene-sets.html#cb112-1" aria-hidden="true"></a><span class="kw">library</span>(BiocSet)</span></code></pre></div>
+<p>Start by identifying the unique element / set combinations</p>
+<div class="sourceCode" id="cb113"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb113-1"><a href="gene-sets.html#cb113-1" aria-hidden="true"></a>elementsets &lt;-</span>
+<span id="cb113-2"><a href="gene-sets.html#cb113-2" aria-hidden="true"></a><span class="st">  </span>eggo <span class="op">%&gt;%</span></span>
+<span id="cb113-3"><a href="gene-sets.html#cb113-3" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="dt">element =</span> <span class="st">&quot;ENTREZID&quot;</span>, <span class="dt">set =</span> <span class="st">&quot;GOID&quot;</span>)</span></code></pre></div>
+<p>Then create a BiocSet from this relationship</p>
+<div class="sourceCode" id="cb114"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb114-1"><a href="gene-sets.html#cb114-1" aria-hidden="true"></a>es &lt;-<span class="st"> </span><span class="kw">BiocSet_from_elementset</span>(elementsets)</span>
+<span id="cb114-2"><a href="gene-sets.html#cb114-2" aria-hidden="true"></a>es</span></code></pre></div>
+<pre><code>## class: BiocSet
+## 
+## es_element():
+## # A tibble: 17,246 x 1
+##   element
+##   &lt;chr&gt;  
+## 1 1890   
+## 2 4205   
+## 3 291    
+## # … with 17,243 more rows
+## 
+## es_set():
+## # A tibble: 12,130 x 1
+##   set       
+##   &lt;chr&gt;     
+## 1 GO:0000002
+## 2 GO:0000003
+## 3 GO:0000012
+## # … with 12,127 more rows
+## 
+## es_elementset() &lt;active&gt;:
+## # A tibble: 132,810 x 2
+##   element set       
+##   &lt;chr&gt;   &lt;chr&gt;     
+## 1 1890    GO:0000002
+## 2 4205    GO:0000002
+## 3 291     GO:0000002
+## # … with 132,807 more rows</code></pre>
+<p>Use <code>left_join_*()</code> to join annotations to the elements and sets, first removing
+the duplicate information in <code>eggoinfo</code> cause by including the ‘GOID’ column</p>
+<div class="sourceCode" id="cb116"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb116-1"><a href="gene-sets.html#cb116-1" aria-hidden="true"></a>eggoinfo1 &lt;-</span>
+<span id="cb116-2"><a href="gene-sets.html#cb116-2" aria-hidden="true"></a><span class="st">  </span>eggoinfo <span class="op">%&gt;%</span></span>
+<span id="cb116-3"><a href="gene-sets.html#cb116-3" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span>ENTREZID) <span class="op">%&gt;%</span></span>
+<span id="cb116-4"><a href="gene-sets.html#cb116-4" aria-hidden="true"></a><span class="st">  </span><span class="kw">distinct</span>()</span>
+<span id="cb116-5"><a href="gene-sets.html#cb116-5" aria-hidden="true"></a>es &lt;-</span>
+<span id="cb116-6"><a href="gene-sets.html#cb116-6" aria-hidden="true"></a><span class="st">  </span>es <span class="op">%&gt;%</span></span>
+<span id="cb116-7"><a href="gene-sets.html#cb116-7" aria-hidden="true"></a><span class="st">  </span><span class="kw">left_join_element</span>(toptbl, <span class="dt">by =</span> <span class="kw">c</span>(<span class="dt">element =</span> <span class="st">&quot;ENTREZID&quot;</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb116-8"><a href="gene-sets.html#cb116-8" aria-hidden="true"></a><span class="st">  </span><span class="kw">left_join_set</span>(eggoinfo1, <span class="dt">by =</span> <span class="kw">c</span>(<span class="dt">set =</span> <span class="st">&quot;GOID&quot;</span>))</span></code></pre></div>
+<p>The result is an object that coordinates annotations on genes and sets</p>
+<div class="sourceCode" id="cb117"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb117-1"><a href="gene-sets.html#cb117-1" aria-hidden="true"></a>es</span></code></pre></div>
+<pre><code>## class: BiocSet
+## 
+## es_element():
+## # A tibble: 20,003 x 9
+##   element Gene     SYMBOL baseMean log2FoldChange  lfcSE  stat   pvalue     padj
+##   &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;     &lt;dbl&gt;          &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 1890    ENSG000… TYMP       145.          1.23  0.199   6.18 6.58e-10  1.49e-8
+## 2 4205    ENSG000… MEF2A     1566.          0.529 0.0919  5.76 8.45e- 9  1.64e-7
+## 3 291     ENSG000… SLC25…     361.          0.660 0.142   4.65 3.35e- 6  4.15e-5
+## # … with 20,000 more rows
+## 
+## es_set():
+## # A tibble: 12,130 x 4
+##   set      ONTOLOGY TERM               DEFINITION                               
+##   &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;              &lt;chr&gt;                                    
+## 1 GO:0000… BP       mitochondrial gen… The maintenance of the structure and int…
+## 2 GO:0000… BP       reproduction       The production of new individuals that c…
+## 3 GO:0000… BP       single strand bre… The repair of single strand breaks in DN…
+## # … with 12,127 more rows
+## 
+## es_elementset() &lt;active&gt;:
+## # A tibble: 132,810 x 2
+##   element set       
+##   &lt;chr&gt;   &lt;chr&gt;     
+## 1 1890    GO:0000002
+## 2 4205    GO:0000002
+## 3 291     GO:0000002
+## # … with 132,807 more rows</code></pre>
+<p>The individual tables are easily manipulated</p>
+<div class="sourceCode" id="cb119"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb119-1"><a href="gene-sets.html#cb119-1" aria-hidden="true"></a><span class="kw">es_set</span>(es) <span class="op">%&gt;%</span></span>
+<span id="cb119-2"><a href="gene-sets.html#cb119-2" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(<span class="kw">startsWith</span>(TERM, <span class="st">&quot;mitochondrial&quot;</span>))</span></code></pre></div>
+<pre><code>## # A tibble: 70 x 4
+##    set     ONTOLOGY TERM                      DEFINITION                        
+##    &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;                     &lt;chr&gt;                             
+##  1 GO:000… BP       mitochondrial genome mai… The maintenance of the structure …
+##  2 GO:000… BP       mitochondrial fission     The division of a mitochondrion w…
+##  3 GO:000… BP       mitochondrial RNA catabo… The chemical reactions and pathwa…
+##  4 GO:000… BP       mitochondrial mRNA catab… The chemical reactions and pathwa…
+##  5 GO:000… BP       mitochondrial RNA metabo… The chemical reactions and pathwa…
+##  6 GO:000… BP       mitochondrial RNA proces… The conversion of a primary RNA m…
+##  7 GO:000… BP       mitochondrial RNA 5&#39;-end… Any process involved in forming t…
+##  8 GO:000… BP       mitochondrial RNA 3&#39;-end… Any process involved in forming t…
+##  9 GO:000… BP       mitochondrial electron t… The transfer of electrons from NA…
+## 10 GO:000… BP       mitochondrial electron t… The transfer of electrons from su…
+## # … with 60 more rows</code></pre>
+<p>as are the elements and sets</p>
+<div class="sourceCode" id="cb121"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb121-1"><a href="gene-sets.html#cb121-1" aria-hidden="true"></a>goids &lt;-</span>
+<span id="cb121-2"><a href="gene-sets.html#cb121-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">es_set</span>(es) <span class="op">%&gt;%</span></span>
+<span id="cb121-3"><a href="gene-sets.html#cb121-3" aria-hidden="true"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(<span class="kw">startsWith</span>(TERM, <span class="st">&quot;mitochondrial&quot;</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb121-4"><a href="gene-sets.html#cb121-4" aria-hidden="true"></a><span class="st">  </span><span class="kw">pull</span>(set)</span>
+<span id="cb121-5"><a href="gene-sets.html#cb121-5" aria-hidden="true"></a>mitochondrial_genes &lt;-</span>
+<span id="cb121-6"><a href="gene-sets.html#cb121-6" aria-hidden="true"></a><span class="st">  </span>es <span class="op">%&gt;%</span></span>
+<span id="cb121-7"><a href="gene-sets.html#cb121-7" aria-hidden="true"></a><span class="st">  </span><span class="kw">filter_elementset</span>(set <span class="op">%in%</span><span class="st"> </span>goids)</span></code></pre></div>
+<p>Sets can be converted to ‘denormalized’ tibbles</p>
+<div class="sourceCode" id="cb122"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb122-1"><a href="gene-sets.html#cb122-1" aria-hidden="true"></a>mitochondrial_genes <span class="op">%&gt;%</span></span>
+<span id="cb122-2"><a href="gene-sets.html#cb122-2" aria-hidden="true"></a><span class="st">  </span><span class="kw">tibble_from_elementset</span>()</span></code></pre></div>
+<pre><code>## # A tibble: 764 x 13
+##    element set   ONTOLOGY TERM  DEFINITION Gene  SYMBOL baseMean log2FoldChange
+##    &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;          &lt;dbl&gt;
+##  1 1890    GO:0… BP       mito… The maint… ENSG… TYMP      145.           1.23 
+##  2 4205    GO:0… BP       mito… The maint… ENSG… MEF2A    1566.           0.529
+##  3 291     GO:0… BP       mito… The maint… ENSG… SLC25…    361.           0.660
+##  4 10000   GO:0… BP       mito… The maint… ENSG… AKT3     1195.           0.327
+##  5 9361    GO:0… BP       mito… The maint… ENSG… LONP1    1215.          -0.326
+##  6 55186   GO:0… BP       mito… The maint… ENSG… SLC25…   2065.           0.145
+##  7 92667   GO:0… BP       mito… The maint… ENSG… MGME1     290.           0.202
+##  8 4976    GO:0… BP       mito… The maint… ENSG… OPA1     1309.           0.123
+##  9 4976    GO:0… BP       mito… The maint… LRG_… LRG_3…      0           NA    
+## 10 84275   GO:0… BP       mito… The maint… ENSG… SLC25…     65.9          0.305
+## # … with 754 more rows, and 4 more variables: lfcSE &lt;dbl&gt;, stat &lt;dbl&gt;,
+## #   pvalue &lt;dbl&gt;, padj &lt;dbl&gt;</code></pre>
 </div>
 <div id="saving-and-session-information" class="section level2" number="5.5">
 <h2><span class="header-section-number">5.5</span> Saving and session information</h2>
-<div class="sourceCode" id="cb116"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb116-1"><a href="gene-sets.html#cb116-1" aria-hidden="true"></a><span class="kw">sessionInfo</span>()</span></code></pre></div>
+<p>As usual, we close the chapter by saving the primary result</p>
+<div class="sourceCode" id="cb124"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb124-1"><a href="gene-sets.html#cb124-1" aria-hidden="true"></a><span class="kw">saveRDS</span>(es, <span class="st">&quot;GO_elementset.Rda&quot;</span>)</span></code></pre></div>
+<p>and recording session information.</p>
+<div class="sourceCode" id="cb125"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb125-1"><a href="gene-sets.html#cb125-1" aria-hidden="true"></a><span class="kw">sessionInfo</span>()</span></code></pre></div>
 <pre><code>## R version 4.0.2 Patched (2020-09-15 r79213)
 ## Platform: x86_64-apple-darwin17.7.0 (64-bit)
 ## Running under: macOS High Sierra 10.13.6
@@ -394,17 +522,18 @@ term and definition…</p>
 ## [8] methods   base     
 ## 
 ## other attached packages:
-##  [1] AnnotationHub_2.20.2        BiocFileCache_1.12.1       
-##  [3] dbplyr_1.4.4                DESeq2_1.28.1              
-##  [5] airway_1.8.0                SummarizedExperiment_1.18.2
-##  [7] DelayedArray_0.14.1         matrixStats_0.56.0         
-##  [9] org.Hs.eg.db_3.11.4         GO.db_3.11.4               
-## [11] dplyr_1.0.2                 EnsDb.Hsapiens.v75_2.99.0  
-## [13] ensembldb_2.12.1            AnnotationFilter_1.12.0    
-## [15] GenomicFeatures_1.40.1      AnnotationDbi_1.50.3       
-## [17] Biobase_2.48.0              GenomicRanges_1.40.0       
-## [19] GenomeInfoDb_1.24.2         IRanges_2.22.2             
-## [21] S4Vectors_0.26.1            BiocGenerics_0.34.0        
+##  [1] BiocSet_1.2.2               AnnotationHub_2.20.2       
+##  [3] BiocFileCache_1.12.1        dbplyr_1.4.4               
+##  [5] DESeq2_1.28.1               airway_1.8.0               
+##  [7] SummarizedExperiment_1.18.2 DelayedArray_0.14.1        
+##  [9] matrixStats_0.56.0          org.Hs.eg.db_3.11.4        
+## [11] GO.db_3.11.4                dplyr_1.0.2                
+## [13] EnsDb.Hsapiens.v75_2.99.0   ensembldb_2.12.1           
+## [15] AnnotationFilter_1.12.0     GenomicFeatures_1.40.1     
+## [17] AnnotationDbi_1.50.3        Biobase_2.48.0             
+## [19] GenomicRanges_1.40.0        GenomeInfoDb_1.24.2        
+## [21] IRanges_2.22.2              S4Vectors_0.26.1           
+## [23] BiocGenerics_0.34.0        
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] ProtGenerics_1.20.0           bitops_1.0-6                 
@@ -428,28 +557,30 @@ term and definition…</p>
 ## [37] generics_0.0.2                BiocParallel_1.22.0          
 ## [39] RCurl_1.98-1.2                magrittr_1.5                 
 ## [41] GenomeInfoDbData_1.2.3        Matrix_1.2-18                
-## [43] Rcpp_1.0.5                    munsell_0.5.0                
-## [45] fansi_0.4.1                   lifecycle_0.2.0              
+## [43] fansi_0.4.1                   Rcpp_1.0.5                   
+## [45] munsell_0.5.0                 lifecycle_0.2.0              
 ## [47] stringi_1.4.6                 yaml_2.2.1                   
-## [49] zlibbioc_1.34.0               grid_4.0.2                   
-## [51] blob_1.2.1                    promises_1.1.1               
-## [53] crayon_1.3.4                  lattice_0.20-41              
-## [55] Biostrings_2.56.0             splines_4.0.2                
-## [57] annotate_1.66.0               hms_0.5.3                    
-## [59] locfit_1.5-9.4                knitr_1.29                   
-## [61] pillar_1.4.6                  geneplotter_1.66.0           
-## [63] codetools_0.2-16              biomaRt_2.44.1               
-## [65] BiocVersion_3.11.1            XML_3.99-0.5                 
-## [67] glue_1.4.2                    evaluate_0.14                
-## [69] BiocManager_1.30.10           httpuv_1.5.4                 
-## [71] vctrs_0.3.4                   gtable_0.3.0                 
-## [73] openssl_1.4.2                 purrr_0.3.4                  
-## [75] assertthat_0.2.1              ggplot2_3.3.2                
-## [77] xfun_0.16                     mime_0.9                     
-## [79] xtable_1.8-4                  later_1.1.0.1                
-## [81] survival_3.2-3                tibble_3.0.3                 
-## [83] GenomicAlignments_1.24.0      memoise_1.1.0                
-## [85] interactiveDisplayBase_1.26.3 ellipsis_0.3.1</code></pre>
+## [49] zlibbioc_1.34.0               plyr_1.8.6                   
+## [51] grid_4.0.2                    blob_1.2.1                   
+## [53] promises_1.1.1                crayon_1.3.4                 
+## [55] lattice_0.20-41               Biostrings_2.56.0            
+## [57] splines_4.0.2                 annotate_1.66.0              
+## [59] KEGGREST_1.28.0               hms_0.5.3                    
+## [61] locfit_1.5-9.4                knitr_1.29                   
+## [63] pillar_1.4.6                  codetools_0.2-16             
+## [65] geneplotter_1.66.0            biomaRt_2.44.1               
+## [67] XML_3.99-0.5                  glue_1.4.2                   
+## [69] BiocVersion_3.11.1            evaluate_0.14                
+## [71] BiocManager_1.30.10           png_0.1-7                    
+## [73] httpuv_1.5.4                  vctrs_0.3.4                  
+## [75] gtable_0.3.0                  openssl_1.4.2                
+## [77] purrr_0.3.4                   assertthat_0.2.1             
+## [79] ggplot2_3.3.2                 xfun_0.16                    
+## [81] mime_0.9                      xtable_1.8-4                 
+## [83] later_1.1.0.1                 survival_3.2-3               
+## [85] tibble_3.0.3                  GenomicAlignments_1.24.0     
+## [87] memoise_1.1.0                 ellipsis_0.3.1               
+## [89] interactiveDisplayBase_1.26.3</code></pre>
 
 </div>
 </div>
@@ -459,7 +590,7 @@ term and definition…</p>
         </div>
       </div>
 <a href="discovering-genomic-coordinates.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="references.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="advanced-working-with-sql-databases.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

@@ -49,7 +49,7 @@ Genes can belong to more than on GO category (e.g., participate in more than
 one biological pathway). Use `AnnotationDbi::select()` to map between ENTREZID
 and GO id; we'll represent the result as a tibble for convenience
 
-```{r}
+```{r, message = FALSE}
 eggo <- AnnotationDbi::select(org.Hs.eg.db, toptbl$ENTREZID, "GO") %>%
   as_tibble()
 eggo
@@ -92,7 +92,7 @@ cat(strwrap(def$DEFINITION), sep="\n")
 
 Add terms and definitions to all rows of `eggo`
 
-```{r}
+```{r, message = FALSE}
 goinfo <- 
   AnnotationDbi::select(
     GO.db, eggo$GOID, c("TERM", "DEFINITION"), "GOID"
@@ -120,9 +120,85 @@ left_join(eggoinfo, toptbl, by = "ENTREZID")
 
 ## More flexible gene set annotation using [BiocSet][]
 
+Gene sets can be thought of as a three related 'tables': genes, sets, and the
+gene/set relationship. [BiocSet][] provides a way to manage these tables.
+
+```{r, message = FALSE}
+library(BiocSet)
+```
+
+Start by identifying the unique element / set combinations
+
+```{r}
+elementsets <-
+  eggo %>%
+  dplyr::select(element = "ENTREZID", set = "GOID")
+```
+
+Then create a BiocSet from this relationship
+
+```{r, message = FALSE}
+es <- BiocSet_from_elementset(elementsets)
+es
+```
+
+Use `left_join_*()` to join annotations to the elements and sets, first removing
+the duplicate information in `eggoinfo` cause by including the 'GOID' column
+
+```{r, message = FALSE}
+eggoinfo1 <-
+  eggoinfo %>%
+  dplyr::select(-ENTREZID) %>%
+  distinct()
+es <-
+  es %>%
+  left_join_element(toptbl, by = c(element = "ENTREZID")) %>%
+  left_join_set(eggoinfo1, by = c(set = "GOID"))
+```
+
+The result is an object that coordinates annotations on genes and sets
+
+```{r}
+es
+```
+
+The individual tables are easily manipulated
+
+```{r}
+es_set(es) %>%
+  dplyr::filter(startsWith(TERM, "mitochondrial"))
+```
+
+as are the elements and sets
+
+```{r}
+goids <-
+  es_set(es) %>%
+  dplyr::filter(startsWith(TERM, "mitochondrial")) %>%
+  pull(set)
+mitochondrial_genes <-
+  es %>%
+  filter_elementset(set %in% goids)
+```
+
+Sets can be converted to 'denormalized' tibbles
+
+```{r, message = FALSE}
+mitochondrial_genes %>%
+  tibble_from_elementset()
+```
+
 [BiocSet]: https://bioconductor.org/packages/BiocSet
 
 ## Saving and session information
+
+As usual, we close the chapter by saving the primary result
+
+```{r}
+saveRDS(es, "GO_elementset.Rda")
+```
+
+and recording session information.
 
 ```{r}
 sessionInfo()

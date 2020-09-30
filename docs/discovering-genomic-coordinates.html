@@ -167,7 +167,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="5.4" data-path="gene-sets.html"><a href="gene-sets.html#more-flexible-gene-set-annotation-using-biocset"><i class="fa fa-check"></i><b>5.4</b> More flexible gene set annotation using <span>BiocSet</span></a></li>
 <li class="chapter" data-level="5.5" data-path="BulkRNASeq.html"><a href="BulkRNASeq.html#saving-and-session-information"><i class="fa fa-check"></i><b>5.5</b> Saving and session information</a></li>
 </ul></li>
-<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="chapter" data-level="6" data-path="advanced-working-with-sql-databases.html"><a href="advanced-working-with-sql-databases.html"><i class="fa fa-check"></i><b>6</b> (Advanced) Working with SQL databases</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="gene-symbol-mapping.html"><a href="gene-symbol-mapping.html#what-do-we-want-to-do"><i class="fa fa-check"></i><b>6.1</b> What do we want to do?</a></li>
+<li class="chapter" data-level="6.2" data-path="advanced-working-with-sql-databases.html"><a href="advanced-working-with-sql-databases.html#using-dbplyr-to-access-the-ensdb.hsapiens.v75-database"><i class="fa fa-check"></i><b>6.2</b> Using <span>dbplyr</span> to access the [EnsDb.Hsapiens.v75] database</a></li>
+<li class="chapter" data-level="6.3" data-path="advanced-working-with-sql-databases.html"><a href="advanced-working-with-sql-databases.html#working-with-database-tables"><i class="fa fa-check"></i><b>6.3</b> Working with database tables</a></li>
+<li class="chapter" data-level="6.4" data-path="BulkRNASeq.html"><a href="BulkRNASeq.html#saving-and-session-information"><i class="fa fa-check"></i><b>6.4</b> Saving and session information</a></li>
+</ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
 
@@ -216,7 +222,7 @@ start and end nucleotides) of each of these genes?</p>
 </div>
 <div id="genomic-ranges" class="section level2" number="4.2">
 <h2><span class="header-section-number">4.2</span> Genomic ranges</h2>
-<p>_Bioconductor uses the [GenomicRanges][] package to represent genomic
+<p><em>Bioconductor</em> uses the [GenomicRanges][] package to represent genomic
 coordinates.</p>
 <div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="discovering-genomic-coordinates.html#cb72-1" aria-hidden="true"></a><span class="kw">library</span>(GenomicRanges)</span>
 <span id="cb72-2"><a href="discovering-genomic-coordinates.html#cb72-2" aria-hidden="true"></a><span class="kw">GRanges</span>(</span>
