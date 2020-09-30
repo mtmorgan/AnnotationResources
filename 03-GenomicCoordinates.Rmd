@@ -46,6 +46,8 @@ There are a large number of very useful operations that can be performed on
 GRanges; see the vignettes in the GenomicRanges package, available on the
 package [landing page][GenomicRanges].
 
+[GenomicRanges]: https://bioconductor.org/packages/GenomicRanges
+
 ## Mapping from identifiers to ranges
 
 The coordinates of all genes are included in the EnsDb packages. Use the

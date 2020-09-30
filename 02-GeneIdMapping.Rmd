@@ -45,6 +45,8 @@ BiocManager::available("EnsDb")
 so we load that package (it may be necessary to install the package using
 [BiocManager][], as outlined previously)
 
+[BiocManager]: https://cran.r-project.org/package=BiocManager
+
 ```{r, message = FALSE}
 library(EnsDb.Hsapiens.v75)
 ```

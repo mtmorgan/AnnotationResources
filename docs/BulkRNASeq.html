@@ -199,7 +199,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="rna-seq-differential-expression-data-in-r-bioconductor" class="section level2" number="2.1">
 <h2><span class="header-section-number">2.1</span> RNA-seq differential expression data in <em>R</em> / <em>Bioconductor</em></h2>
 <p>Bulk RNA sequencing starts by extracting tissue from samples, and then measuring
-‘gene expression’ for many 1000’s of genes in each sample. The [airway][] package
+‘gene expression’ for many 1000’s of genes in each sample. The <a href="https://bioconductor.org/packages/airway">airway</a> package
 is an example of bulk RNA-seq data, processed (see the airway <a href="https://bioconductor.org/packages/release/data/experiment/vignettes/airway/inst/doc/airway.html">vignette</a>,
 available from the package landing page) to a ‘SummarizedExperiment’ for use in <em>Bioconductor</em>.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="BulkRNASeq.html#cb3-1" aria-hidden="true"></a><span class="kw">library</span>(airway)</span>
@@ -317,7 +317,7 @@ data, the ‘rowData’ are very simple and consist just of <a href="https://ens
 <h2><span class="header-section-number">2.2</span> A quick analysis</h2>
 <p>It’s beyond the scope of today’s lecture, but let’s do a quick analysis of
 differenetial expression in the airway dataset.</p>
-<p>Start by loading the [DESeq2][] package</p>
+<p>Start by loading the <a href="https://bioconductor.org/packages/DESeq2">DESeq2</a> package</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="BulkRNASeq.html#cb19-1" aria-hidden="true"></a><span class="kw">library</span>(DESeq2)</span></code></pre></div>
 <p>Prepare the data by ‘re-leveling’ the ‘dex’ treatment variable, and describing
 the experirmental design</p>

@@ -11,6 +11,7 @@ Bulk RNA sequencing starts by extracting tissue from samples, and then measuring
 is an example of bulk RNA-seq data, processed (see the airway [vignette][airway-vignette],
 available from the package landing page) to a 'SummarizedExperiment' for use in _Bioconductor_.
 
+[airway]: https://bioconductor.org/packages/airway
 [airway-vignette]: https://bioconductor.org/packages/release/data/experiment/vignettes/airway/inst/doc/airway.html
 
 ```{r, message = FALSE}
@@ -71,6 +72,8 @@ It's beyond the scope of today's lecture, but let's do a quick analysis of
 differenetial expression in the airway dataset.
 
 Start by loading the [DESeq2][] package
+
+[DESeq2]: https://bioconductor.org/packages/DESeq2
 
 ```{r, message = FALSE}
 library(DESeq2)
