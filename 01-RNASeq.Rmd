@@ -50,9 +50,9 @@ design <-
   select(Sample, cell, dex)
 design
 design %>%
-  count(dex)
+  dplyr::count(dex)
 design %>%
-  count(cell)
+  dplyr::count(cell)
 ```
 
 Today we'll focus on the rows (genes) of the RNASeq experiment. In the airway

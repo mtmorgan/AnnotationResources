@@ -1,6 +1,6 @@
 --- 
 title: "Bioconductor Annotation Resources"
-author: "Martni Morgan"
+author: "Martin Morgan"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output: bookdown::gitbook
