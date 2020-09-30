@@ -1,0 +1,85 @@
+--- 
+title: "Bioconductor Annotation Resources"
+author: "Martni Morgan"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+output: bookdown::gitbook
+documentclass: book
+bibliography: [book.bib, packages.bib]
+biblio-style: apalike
+link-citations: yes
+github-repo: rstudio/bookdown-demo
+description: "This is a brief introduction to Bioconductor annotation resources,
+    prepared for an R-Ladies session in Tunisia, September 30, 2020."
+---
+
+# Prerequisites
+
+We'll try to make as few biological assumptions as possible, but I know that
+Dr. Michael Love led a recent meet-up covering use of the [DESeq2][] package
+for [bulk RNASeq differential expression][BulkRNASeq] analysis.
+
+[DESeq2]: https://bioconductor.org/packages/DESeq2
+[BulkRNASeq]: https://www.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html
+
+## Plan
+
+We start by a quick
+
+- _Review_ of bulk RNA sequencing
+
+primarily to get an introduction to the [airway][] package and sample data set.
+
+We'll then talk about some simple types of genomic annotation:
+
+- _Identifier mapping_, for instance from Ensembl gene identifiers to human
+  gene symbols.
+- _Gene annotation_, to discover the genomic coordinates (`GRanges`) of genes
+  and transcripts.
+- _Gene sets_ corresponding to pre-defined categories, e.g., from the
+  [Gene Ontology][] (GO)  or [MSigDB][].
+  
+With this exposure, we'll take a brief forward look at
+
+- _Cell annotation_, relevant to new single-cell RNA sequence analysis. An
+  excellent resource for scRNASeq is the book
+  [Orchestrating Single Cell Analysis in _Bioconductor_][OSCA]
+
+[Gene Ontology]: http://geneontology.org/
+[MSigDB]: https://www.gsea-msigdb.org/gsea/msigdb
+[OSCA]: https://bioconductor.org/book/OSCA
+
+## _Bioconductor_
+
+[Bioconductor][] is a collection of more than 1900 _R_ packages for the
+statistical analysis and comprehension of high-throughput genomic data.
+
+_Bioconductor_ packages are installed in a slightly different way. First,
+make sure that you have the [BiocManager][] package installed
+
+```{r, message = FALSE}
+if (!"BiocManager" %in% rownames(installed.packages()))
+  install.packages("BiocManager", repos = "https://cran.r-project.org")
+```
+
+Then, install packages as needed. For instance, if you want to use the CRAN 
+package [dplyr][], and the _Bioconductor_ package [airway][], install these
+with
+
+```{r, eval = FALSE}
+pkgs <- c("dplyr", "airway")
+pkgs <- pkgs[!pkgs %in% rownames(installed.packages())]
+BiocManager::install(pkgs)
+```
+
+[Bioconductor]: https://bioconductor.org/
+[BiocManager]: https://cran.r-project.org/package=BiocManager
+[airway]: https://bioconductor.org/packages/airway
+[dplyr]: https://cran.r-project.org/package=dplyr
+
+```{r include=FALSE}
+# automatically create a bib database for R packages
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+), 'packages.bib')
+```

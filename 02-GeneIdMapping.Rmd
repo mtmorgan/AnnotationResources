@@ -1,0 +1,125 @@
+# Gene symbol mapping
+
+```{r echo = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+## What do we want to do?
+
+Start by loading the updated 'airway' object from the previous chapter
+
+```{r, message = FALSE}
+airway <- readRDS("airway_with_results.Rda")
+```
+
+Here is the row data
+
+```{r}
+rowData(airway)
+```
+
+It's easy to find the 'most differentially expressed' (smallest adjusted P-value?) genes, e.g.,
+
+```{r}
+toptbl <-
+  rowData(airway) %>%
+  as_tibble(rownames = "Gene") %>%
+  arrange(padj)
+toptbl
+```
+
+But what exactly does "ENSG00000152583" do? Can we map this identifier to a
+more familiar representation, perhaps find out some basic information about 
+what it does?
+
+## Finding annotation resources
+
+From the airway [vignette][airway-vignette], the experiment used Ensembl
+reference annotations from Ensembl release 75. This is available as a
+_Bioconductor_ package
+
+```{r}
+BiocManager::available("EnsDb")
+```
+
+so we load that package (it may be necessary to install the package using
+[BiocManager][], as outlined previously)
+
+```{r, message = FALSE}
+library(EnsDb.Hsapiens.v75)
+```
+
+The central object in this package is the same as the package name
+
+```{r}
+EnsDb.Hsapiens.v75
+```
+
+This object represents a connection to a database of gene symbol mapping.
+
+Many other genomes (and other annotation resources) are available in the
+AnnotationHub
+
+```{r, message = FALSE}
+library(AnnotationHub)
+library(ensembldb)
+hub <- AnnotationHub()
+hub
+query(hub, c("EnsDb", "Homo sapiens"))
+ens101 <- hub[["AH83216"]]
+ens101
+```
+
+## Mapping between identiifiers
+
+```{r}
+keytypes(EnsDb.Hsapiens.v75)
+head(keys(EnsDb.Hsapiens.v75, "GENEID"))
+columns(EnsDb.Hsapiens.v75)
+```
+
+```{r}
+mapIds(EnsDb.Hsapiens.v75, toptbl$Gene, "SYMBOL", "GENEID") %>%
+  head()
+```
+
+```{r}
+toptbl %>%
+  mutate(
+    SYMBOL = mapIds(x = EnsDb.Hsapiens.v75, Gene, "SYMBOL", "GENEID")
+  )
+```
+    
+
+```{r}
+mapIds(EnsDb.Hsapiens.v75, toptbl$Gene, "GENENAME", "GENEID") %>%
+  head()
+```
+
+```{r}
+toptbl <- 
+  toptbl %>%
+  mutate(
+    SYMBOL = mapIds(x = EnsDb.Hsapiens.v75, Gene, "SYMBOL", "GENEID"),
+    ENTREZID = mapIds(x = EnsDb.Hsapiens.v75, Gene, "ENTREZID", "GENEID")
+  ) %>%
+  dplyr::select(
+    "Gene", "SYMBOL", "ENTREZID",
+    everything()
+  )
+toptbl
+```
+
+## Saving and session information
+
+Let's save the updated top table for future use
+
+```{r}
+saveRDS(toptbl, "toptbl.Rda")
+```
+
+and record our session information for reproducibility
+
+```{r}
+sessionInfo()
+```

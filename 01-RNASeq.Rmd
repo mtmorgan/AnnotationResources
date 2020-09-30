@@ -1,0 +1,118 @@
+# Bulk RNA Sequencing {#BulkRNASeq}
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+## RNA-seq differential expression data in _R_ / _Bioconductor_
+
+Bulk RNA sequencing starts by extracting tissue from samples, and then measuring
+'gene expression' for many 1000's of genes in each sample. The [airway][] package
+is an example of bulk RNA-seq data, processed (see the airway [vignette][airway-vignette],
+available from the package landing page) to a 'SummarizedExperiment' for use in _Bioconductor_.
+
+[airway-vignette]: https://bioconductor.org/packages/release/data/experiment/vignettes/airway/inst/doc/airway.html
+
+```{r, message = FALSE}
+library(airway)
+data(airway)
+airway
+```
+
+The essence of an RNA-seq differential expression expression is a matrix of
+counts of expression of individual genes in each sample. This data is available
+using the accessor `assay()`
+
+```{r}
+dim(assay(airway))
+head(assay(airway))
+```
+
+Usually the samples are taken from an _experimental design_. The samples might be 
+from an actual experiment, or from, e.g., different tissues, etc.
+
+Here's the experimental design:
+
+```{r}
+colData(airway)
+```
+
+There are 8 samples ('Sample') from four cell lines ('cell'), exposed to two treatments of
+dexamethasone ('dex')
+
+When I explore data I sometimes like to use the 'tidy' approach
+
+```{r, message = FALSE}
+library(dplyr)
+design <-
+  colData(airway) %>%
+  as_tibble() %>%
+  select(Sample, cell, dex)
+design
+design %>%
+  count(dex)
+design %>%
+  count(cell)
+```
+
+Today we'll focus on the rows (genes) of the RNASeq experiment. In the airway
+data, the 'rowData' are very simple and consist just of [Ensembl][] gene identifiers
+
+[Ensembl]: https://ensemblgenomes.org/
+
+```{r}
+rowData(airway) %>%
+  as_tibble(rownames = "Gene")
+```
+
+## A quick analysis
+
+It's beyond the scope of today's lecture, but let's do a quick analysis of
+differenetial expression in the airway dataset.
+
+Start by loading the [DESeq2][] package
+
+```{r, message = FALSE}
+library(DESeq2)
+```
+
+Prepare the data by 're-leveling' the 'dex' treatment variable, and describing
+the experirmental design
+
+```{r}
+colData(airway)$dex <- relevel(colData(airway)$dex, "untrt")
+dds <- DESeqDataSet(airway, ~ cell + dex)
+```
+
+Perform the differential expression analysis...
+
+```{r}
+dds <- DESeq(dds)
+```
+
+...and summarize results in terms average expression ('baseMean'), adjusted
+P-value ('padj'), etc.
+
+```{r}
+results(dds)
+```
+
+For convenience, add the results to the `rowData()` of the airway dataset
+
+```{r}
+rowData(airway) <- results(dds)
+```
+
+## Saving and session information
+
+Save the updated object for use in the next chapter.
+
+```{r}
+saveRDS(airway, "airway_with_results.Rda")
+```
+
+Use the `sessionInfo()` command to record the precise software versions we used.
+
+```{r}
+sessionInfo()
+```

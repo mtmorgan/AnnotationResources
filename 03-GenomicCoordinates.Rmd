@@ -1,0 +1,103 @@
+# Discovering genomic coordinates
+
+```{r echo = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+## What do we want to do?
+
+Load the annotation and tidy packages, and our work from the last chapter
+
+```{r, message = FALSE}
+library(EnsDb.Hsapiens.v75)
+library(dplyr)
+toptbl <- readRDS("toptbl.Rda")
+toptbl
+```
+
+Can we get information about the genomic coordinates (e.g., chromosome, strand, 
+start and end nucleotides) of each of these genes?
+
+## Genomic ranges
+
+_Bioconductor uses the [GenomicRanges][] package to represent genomic
+coordinates.
+
+```{r, message = FALSE}
+library(GenomicRanges)
+GRanges(
+  c("chr1:1-10", "chr2:20-30:+")
+)
+```
+
+Genomic ranges consist of `seqnames` (e.g., chromosome, but could be a 
+contig or other DNA / RNA / amino acid sequence), `start` and `end` coordinates, 
+and an optional `strand`.
+
+The coordinates are 1-based, closed intervals. So the first range in the example
+above starts at the very first nucleotide on chr1, and includes the 10th
+nucleotide -- there are 11 total nucleotides (1, 2, ..., 10) in the range in 
+total! This differs from some schemes, notably that used in the UCSC genome
+browser, where the ranges are 0-based and half-open (the start but not the end
+nucelotide is included in the range) and the example above would have been
+written 'chr1:0-10'.
+
+There are a large number of very useful operations that can be performed on
+GRanges; see the vignettes in the GenomicRanges package, available on the
+package [landing page][GenomicRanges].
+
+## Mapping from identifiers to ranges
+
+The coordinates of all genes are included in the EnsDb packages. Use the
+`genes()` accessor to extract the ranges.
+
+```{r}
+genes(EnsDb.Hsapiens.v75)
+```
+
+Note that the GRanges have names corresponding to Ensembl gene identifiers,
+so the ranges ordered according to our top table are
+
+```{r}
+genes(EnsDb.Hsapiens.v75)[toptbl$Gene]
+```
+
+It is possible to get addition information from the EnsDb, e.g., the coordinates
+of all exons in a gene.
+
+```{r}
+exonsBy(EnsDb.Hsapiens.v75, "gene")[toptbl$Gene]
+```
+
+## Flexible queries on EnsDb objects
+
+The EnsDb objects allow very flexible queries. Suppose we were interested in
+the top 6 most differentially expressed gene symbols
+
+```{r}
+ids <- head(toptbl$SYMBOL)
+ids
+```
+
+We can write an expression like
+
+```{r}
+genes(EnsDb.Hsapiens.v75, filter = ~ genename %in% ids)
+```
+
+to select just the genomic ranges of interest, and
+
+```{r}
+genes(EnsDb.Hsapiens.v75, filter = ~ genename %in% ids)[names(ids)]
+```
+
+to place these ranges in 'top table' order.
+
+You'll have an opportunity to explore more about genomic ranges when Dr.
+Stephanie Hicks talks on Tuesday, October 6.
+
+## Saving and session information
+
+```{r}
+sessionInfo()
+```

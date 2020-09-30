@@ -1,0 +1,129 @@
+# Gene sets
+
+```{r echo = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+## What do we want to do?
+
+Return to our top table
+
+```{r}
+toptbl <- readRDS("toptbl.Rda")
+toptbl
+```
+
+One small correction to the top table is that the ENTREZID should be a
+character() vector
+
+```{r}
+toptbl <- 
+  toptbl %>% 
+  mutate(ENTREZID = as.character(ENTREZID))
+```
+
+Biologically, genes always function in some kind of relation with other genes
+and the biology of organsims. For instance, genes
+are expressed in particularly cellular compartments, or participate in
+particular biological processes. We would like to use established _ontologies_
+that describe these relationships.
+
+## Mapping from (entrez) gene identiifiers to GO identifiers
+
+The [org.Hs.eg.db][] packages provides a way to map from (Entrez) gene identifiers
+to GO terms.
+
+```{r, message = FALSE}
+library(org.Hs.eg.db)
+```
+
+Note that the keytypes of `org.Hs.eg.db` contain (Entrez) gene IDs, and the
+columns contain GO ids
+
+```{r}
+keytypes(org.Hs.eg.db)
+columns(org.Hs.eg.db)
+```
+
+Genes can belong to more than on GO category (e.g., participate in more than
+one biological pathway). Use `AnnotationDbi::select()` to map between ENTREZID
+and GO id; we'll represent the result as a tibble for convenience
+
+```{r}
+eggo <- AnnotationDbi::select(org.Hs.eg.db, toptbl$ENTREZID, "GO") %>%
+  as_tibble()
+eggo
+```
+
+Let's focus on the 'biological process' (BP) ontology, and not worry about
+'EVIDENCE' (the type of evidence, e.g., experimental verification,
+computational inference, ...) that supports the classification of a particular
+ENTREZ identifier to a particular GO identifier.
+
+```{r}
+eggo <-
+  eggo %>%
+  dplyr::rename(GOID = "GO") %>%
+  dplyr::select(-EVIDENCE) %>%
+  dplyr::filter(ONTOLOGY %in% "BP") %>%
+  dplyr::distinct()
+eggo
+```
+
+[org.Hs.eg.db]: https://bioconductor.org/packages/org.Hs.eg.db
+
+## Using GO (gene ontology) annotations to group genes by biological process
+
+The [GO.db][] package provides information on GO identifiers.
+
+```{r, message = FALSE}
+library(GO.db)
+columns(GO.db)
+```
+
+Use `AnnotationDbi::select()` to explore information about a particular GO id
+
+```{r, message = FALSE}
+goid <- "GO:0007165"
+AnnotationDbi::select(GO.db, goid, "TERM", "GOID")
+def = AnnotationDbi::select(GO.db, goid, "DEFINITION", "GOID")
+cat(strwrap(def$DEFINITION), sep="\n")
+```
+
+Add terms and definitions to all rows of `eggo`
+
+```{r}
+goinfo <- 
+  AnnotationDbi::select(
+    GO.db, eggo$GOID, c("TERM", "DEFINITION"), "GOID"
+  ) %>% 
+  as_tibble() %>%
+  distinct()
+goinfo
+```
+
+Use `dplyr::left_join()` to join all rows of `eggo` to their corresponding
+term and definition...
+
+```{r}
+eggoinfo <- left_join(eggo, goinfo, by = "GOID")
+eggoinfo
+```
+
+...and even add the top table gene expression information
+
+```{r}
+left_join(eggoinfo, toptbl, by = "ENTREZID")
+```
+
+[GO.db]: https://bioconductor.org/packages/GO.db
+
+## More flexible gene set annotation using [BiocSet][]
+
+[BiocSet]: https://bioconductor.org/packages/BiocSet
+
+## Saving and session information
+
+```{r}
+sessionInfo()
+```
